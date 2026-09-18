@@ -1722,7 +1722,7 @@ function applyRotatorScenario(key) {
     ];
   } else if (key === 'developer') {
     rotatorFramesList = [
-      { name: '💻 VS Code Studio', details: 'Developing Naml RPC 2.0', state: 'Workspace: Clean Source v2.0.0', largeImageKey: 'https://cdn-icons-png.flaticon.com/512/906/906324.png', smallImageKey: 'https://cdn-icons-png.flaticon.com/512/1828/1828884.png' },
+      { name: '💻 VS Code Studio', details: 'Developing Naml RPC 3.0', state: 'Workspace: Clean Source v3.0.0', largeImageKey: 'https://cdn-icons-png.flaticon.com/512/906/906324.png', smallImageKey: 'https://cdn-icons-png.flaticon.com/512/1828/1828884.png' },
       { name: '⚡ GitHub Push', details: 'Open Source Repository', state: 'Branch: main (Clean Build)', largeImageKey: 'https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png', smallImageKey: 'https://cdn-icons-png.flaticon.com/512/785/785116.png' }
     ];
   } else if (key === 'music') {
