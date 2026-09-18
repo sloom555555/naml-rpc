@@ -1,4 +1,4 @@
-﻿# 🐜 نامل | Naml — Discord Rich Presence & Bot Studio
+# 🐜 نامل | Naml — Discord Rich Presence & Bot Studio
 
 <div align="center">
   <img src="assets/naml-logo.png" width="128" height="128" alt="Naml Logo" />
@@ -37,7 +37,7 @@
 
 يمكنك تحميل النسخة الجاهزة للتشغيل مباشرة على نظام ويندوز (بدون الحاجة لتثبيت أي برامج إضافية):
 
-👉 **[اضغط هنا لتحميل أحدث إصدار من صفحة Releases](https://github.com/USERNAME/naml/releases/latest)**
+👉 **[اضغط هنا لتحميل أحدث إصدار من صفحة Releases](https://github.com/sloom555555/naml-rpc/releases/latest)**
 
 1. حمّل ملف `Naml-v2.0.0-Windows-x64.zip`.
 2. فك الضغط عن الملف في أي مكان تريده.
@@ -51,8 +51,8 @@
 
 ```bash
 # 1. استنساخ المستودع
-git clone https://github.com/USERNAME/naml.git
-cd naml
+git clone https://github.com/sloom555555/naml-rpc.git
+cd naml-rpc
 
 # 2. تثبيت الحزم والمكتبات
 npm install
