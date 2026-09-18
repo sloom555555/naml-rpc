@@ -97,6 +97,14 @@ window.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
+  const whPanel = document.getElementById('panel-webhook');
+  if (whPanel) {
+    whPanel.querySelectorAll('input, textarea, select').forEach(el => {
+      el.addEventListener('input', () => debouncedAutoSave(false));
+      el.addEventListener('change', () => debouncedAutoSave(true));
+    });
+  }
+
   // Auto-Save flush on window closing / unloading
   window.addEventListener('beforeunload', () => {
     try {
@@ -118,11 +126,13 @@ window.addEventListener('DOMContentLoaded', async () => {
 function switchTab(name) {
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.querySelector(`.tab[data-tab="${name}"]`).classList.add('active');
-  document.getElementById(`panel-${name}`).classList.add('active');
+  document.querySelector(`.tab[data-tab="${name}"]`)?.classList.add('active');
+  document.getElementById(`panel-${name}`)?.classList.add('active');
   if (name === 'preview') {
     updatePreview();
     handleRefreshDiscordUser(true);
+  } else if (name === 'webhook') {
+    updateWebhookEmbedPreview();
   }
 }
 
@@ -130,6 +140,14 @@ function switchTab(name) {
 //  CONFIG
 // ══════════════════════════════════════════
 let rotatorFramesList = [];
+
+function onActivityTypeChange() {
+  const type = document.getElementById('activityType')?.value;
+  const streamField = document.getElementById('stream-url-field');
+  if (streamField) {
+    streamField.style.display = (type === '1') ? 'block' : 'none';
+  }
+}
 
 function toggleMetricsUI() {
   const enabled = document.getElementById('enableSystemMetrics')?.checked;
@@ -140,6 +158,8 @@ function toggleMetricsUI() {
 function collectConfig() {
   return {
     clientId:             v('clientId') || '1533169274401849414',
+    activityType:         parseInt(document.getElementById('activityType')?.value) || 0,
+    streamUrl:            v('streamUrl'),
     details:              v('details'),
     state:                v('state'),
     largeImageKey:        v('largeImageKey'),
@@ -165,17 +185,33 @@ function collectConfig() {
     button2Url:           v('button2Url'),
 
     rotationEnabled:      document.getElementById('rotationEnabled')?.checked || false,
+    rotationMode:         document.getElementById('rotationMode')?.value || 'sequential',
+    liveMediaEnabled:     document.getElementById('liveMediaEnabled')?.checked || false,
     enableSystemMetrics:  document.getElementById('enableSystemMetrics')?.checked || false,
     metricsFormat:        document.getElementById('metricsFormat')?.value || 'full',
     metricsPlacement:     document.getElementById('metricsPlacement')?.value || 'state',
     rotationInterval:     parseInt(document.getElementById('rotationInterval')?.value) || 5,
-    rotationFrames:       rotatorFramesList
+    rotationFrames:       rotatorFramesList,
+
+    webhookUrl:           v('wh-url'),
+    webhookUsername:      v('wh-username'),
+    webhookAvatar:        v('wh-avatar')
   };
 }
 
 function applyConfigToForm(cfg) {
-  const fields = ['clientId','details','state','largeImageKey','largeImageText','smallImageKey','smallImageText','button1Label','button1Url','button2Label','button2Url','partyId','matchSecret','joinSecret','spectateSecret'];
+  const fields = ['clientId','details','state','largeImageKey','largeImageText','smallImageKey','smallImageText','button1Label','button1Url','button2Label','button2Url','partyId','matchSecret','joinSecret','spectateSecret','streamUrl'];
   fields.forEach(f => { const el = document.getElementById(f); if (el) el.value = cfg[f] || ''; });
+
+  if (document.getElementById('activityType')) {
+    document.getElementById('activityType').value = cfg.activityType !== undefined ? cfg.activityType : 0;
+  }
+  onActivityTypeChange();
+
+  if (cfg.webhookUrl && document.getElementById('wh-url')) document.getElementById('wh-url').value = cfg.webhookUrl;
+  if (cfg.webhookUsername && document.getElementById('wh-username')) document.getElementById('wh-username').value = cfg.webhookUsername;
+  if (cfg.webhookAvatar && document.getElementById('wh-avatar')) document.getElementById('wh-avatar').value = cfg.webhookAvatar;
+  updateWebhookEmbedPreview();
   
   if (cfg.partySize) document.getElementById('partySize').value = cfg.partySize;
   if (cfg.partyMax)  document.getElementById('partyMax').value  = cfg.partyMax;
@@ -186,6 +222,12 @@ function applyConfigToForm(cfg) {
   
   if (document.getElementById('rotationEnabled')) {
     document.getElementById('rotationEnabled').checked = !!cfg.rotationEnabled;
+  }
+  if (document.getElementById('rotationMode') && cfg.rotationMode) {
+    document.getElementById('rotationMode').value = cfg.rotationMode;
+  }
+  if (document.getElementById('liveMediaEnabled')) {
+    document.getElementById('liveMediaEnabled').checked = !!cfg.liveMediaEnabled;
   }
   if (document.getElementById('enableSystemMetrics')) {
     document.getElementById('enableSystemMetrics').checked = !!cfg.enableSystemMetrics;
@@ -986,6 +1028,7 @@ function debouncedPreview() {
 }
 
 function updatePreview() {
+  if (isSimulating) return;
   const cfg = collectConfig();
 
   const largeEl = document.getElementById('pv-large-img');
@@ -994,12 +1037,22 @@ function updatePreview() {
   const state    = document.getElementById('pv-state');
   const timeEl   = document.getElementById('pv-time');
   const btns     = document.getElementById('pv-buttons');
+  const labelEl  = document.getElementById('pv-section-label');
 
-  if (cfg.largeImageKey?.startsWith('http')) {
+  if (labelEl) {
+    const actType = parseInt(cfg.activityType) || 0;
+    if (actType === 1) labelEl.innerHTML = '<span style="color:#a855f7;font-weight:700;">🔴 يبث مباشر</span>';
+    else if (actType === 2) labelEl.innerHTML = '<span style="color:#22c55e;font-weight:700;">🎧 يستمع إلى</span>';
+    else if (actType === 3) labelEl.innerHTML = '<span style="color:#38bdf8;font-weight:700;">📺 يشاهد</span>';
+    else if (actType === 5) labelEl.innerHTML = '<span style="color:#f59e0b;font-weight:700;">🏆 يتنافس في</span>';
+    else labelEl.innerHTML = '<span>🎮 يلعب</span>';
+  }
+
+  if (cfg.largeImageKey?.startsWith('http') || cfg.largeImageKey?.startsWith('data:image')) {
     largeEl.src = cfg.largeImageKey; largeEl.classList.add('show');
   } else { largeEl.classList.remove('show'); }
 
-  if (cfg.smallImageKey?.startsWith('http')) {
+  if (cfg.smallImageKey?.startsWith('http') || cfg.smallImageKey?.startsWith('data:image')) {
     smallEl.src = cfg.smallImageKey; smallEl.classList.add('show');
   } else { smallEl.classList.remove('show'); }
 
@@ -1509,7 +1562,10 @@ function renderRotatorFrames() {
         ? `<img class="rotator-frame-thumb" src="${esc(thumbSrc)}" alt=""/>` 
         : `<div class="rotator-frame-thumb" style="display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--accent2);">${i + 1}</div>`}
       <div class="rotator-frame-info">
-        <div class="rotator-frame-title">${esc(f.name || `فريم ${i + 1}`)}</div>
+        <div class="rotator-frame-title">
+          ${esc(f.name || `فريم ${i + 1}`)}
+          <span style="font-size:10px;background:rgba(99,102,241,0.15);color:var(--accent2);padding:2px 6px;border-radius:4px;font-weight:700;margin-right:6px;">⏱ ${f.duration || 5}ث</span>
+        </div>
         <div class="rotator-frame-sub">${esc(f.details || '—')} | ${esc(f.state || '—')}</div>
       </div>
       <div class="rotator-frame-actions">
@@ -1652,6 +1708,9 @@ function openAddFrameModal() {
   document.getElementById('frame-state-input').value = '';
   document.getElementById('frame-large-img-input').value = '';
   document.getElementById('frame-small-img-input').value = '';
+  if (document.getElementById('frame-duration-input')) {
+    document.getElementById('frame-duration-input').value = '5';
+  }
   updateFrameThumb('large');
   updateFrameThumb('small');
   updateMiniFramePreview();
@@ -1669,6 +1728,9 @@ function editFrame(index) {
   document.getElementById('frame-state-input').value = f.state || '';
   document.getElementById('frame-large-img-input').value = f.largeImageKey || '';
   document.getElementById('frame-small-img-input').value = f.smallImageKey || '';
+  if (document.getElementById('frame-duration-input')) {
+    document.getElementById('frame-duration-input').value = f.duration || 5;
+  }
   updateFrameThumb('large');
   updateFrameThumb('small');
   updateMiniFramePreview();
@@ -1689,7 +1751,8 @@ function saveFrameFromModal() {
     details: v('frame-details-input'),
     state: v('frame-state-input'),
     largeImageKey: v('frame-large-img-input'),
-    smallImageKey: v('frame-small-img-input')
+    smallImageKey: v('frame-small-img-input'),
+    duration: Math.max(2, parseInt(document.getElementById('frame-duration-input')?.value) || 5)
   };
 
   if (index >= 0 && index < rotatorFramesList.length) {
@@ -1884,4 +1947,636 @@ async function handleSecureDownload() {
     }
   }
 }
+
+// ══════════════════════════════════════════
+//  LIVE ROTATOR SIMULATION ENGINE (Feature 4)
+// ══════════════════════════════════════════
+let isSimulating = false;
+let simFrameIndex = 0;
+let simTimer = null;
+let simProgressTimer = null;
+let simPingPongDir = 1;
+let simTotalMs = 5000;
+
+function toggleRotatorSimulation() {
+  if (isSimulating) {
+    stopRotatorSimulation();
+  } else {
+    startRotatorSimulation();
+  }
+}
+
+function startRotatorSimulation() {
+  if (!rotatorFramesList || rotatorFramesList.length === 0) {
+    toast('⚠️ لا توجد فريمات للمعاينة. أضف فريماً أولاً أو اختر سيناريو جاهز.', 'info');
+    return;
+  }
+
+  isSimulating = true;
+  simFrameIndex = 0;
+  simPingPongDir = 1;
+
+  const dot = document.getElementById('sim-dot');
+  const btn = document.getElementById('btn-sim-toggle');
+  const iconSpan = document.getElementById('sim-play-icon');
+  if (dot) dot.classList.add('active');
+  if (btn) btn.classList.add('sim-btn-active');
+  if (iconSpan) {
+    iconSpan.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>`;
+  }
+
+  toast('▶ تم بدء المحاكاة الحية للفريمات في شاشة المعاينة', 'info');
+  runSimFrame();
+}
+
+function stopRotatorSimulation() {
+  isSimulating = false;
+  if (simTimer) {
+    clearTimeout(simTimer);
+    simTimer = null;
+  }
+  if (simProgressTimer) {
+    clearInterval(simProgressTimer);
+    simProgressTimer = null;
+  }
+
+  const dot = document.getElementById('sim-dot');
+  const btn = document.getElementById('btn-sim-toggle');
+  const iconSpan = document.getElementById('sim-play-icon');
+  const counter = document.getElementById('sim-counter-text');
+  const fill = document.getElementById('sim-progress-fill');
+
+  if (dot) dot.classList.remove('active');
+  if (btn) btn.classList.remove('sim-btn-active');
+  if (iconSpan) {
+    iconSpan.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>`;
+  }
+  if (counter) counter.textContent = 'المحاكاة متوقفة — اضغط تشغيل للمعاينة الحية';
+  if (fill) fill.style.width = '0%';
+
+  updatePreview();
+}
+
+function simStepFrame(dir) {
+  if (!rotatorFramesList || rotatorFramesList.length === 0) return;
+  if (simTimer) clearTimeout(simTimer);
+  if (simProgressTimer) clearInterval(simProgressTimer);
+
+  simFrameIndex = (simFrameIndex + dir + rotatorFramesList.length) % rotatorFramesList.length;
+  if (isSimulating) {
+    runSimFrame();
+  } else {
+    renderSimFrameUI(simFrameIndex);
+  }
+}
+
+function renderSimFrameUI(index) {
+  const f = rotatorFramesList[index];
+  if (!f) return;
+
+  const largeEl = document.getElementById('pv-large-img');
+  const smallEl = document.getElementById('pv-small-img');
+  const details  = document.getElementById('pv-details');
+  const state    = document.getElementById('pv-state');
+  const timeEl   = document.getElementById('pv-time');
+
+  if (f.largeImageKey?.startsWith('http') || f.largeImageKey?.startsWith('data:image')) {
+    largeEl.src = f.largeImageKey; largeEl.classList.add('show');
+  } else { largeEl.classList.remove('show'); }
+
+  if (f.smallImageKey?.startsWith('http') || f.smallImageKey?.startsWith('data:image')) {
+    smallEl.src = f.smallImageKey; smallEl.classList.add('show');
+  } else { smallEl.classList.remove('show'); }
+
+  if (f.details) { details.textContent = f.details; details.style.display = ''; }
+  else { details.style.display = 'none'; }
+
+  if (f.state) { state.textContent = f.state; state.style.display = ''; }
+  else { state.style.display = 'none'; }
+
+  if (timeEl) { timeEl.textContent = '00:00 مضت'; timeEl.style.display = ''; }
+
+  const counter = document.getElementById('sim-counter-text');
+  if (counter) {
+    counter.textContent = `فريم ${index + 1} من ${rotatorFramesList.length} (${f.name || 'بدون اسم'}) — المدة: ${f.duration || 5} ثواني`;
+  }
+}
+
+function runSimFrame() {
+  if (!isSimulating || !rotatorFramesList || rotatorFramesList.length === 0) return;
+
+  if (simFrameIndex >= rotatorFramesList.length) simFrameIndex = 0;
+  const currentFrame = rotatorFramesList[simFrameIndex];
+  if (!currentFrame) return;
+
+  renderSimFrameUI(simFrameIndex);
+
+  const durationSec = Math.max(2, parseInt(currentFrame.duration) || parseInt(document.getElementById('rotationInterval')?.value) || 5);
+  simTotalMs = durationSec * 1000;
+
+  const fill = document.getElementById('sim-progress-fill');
+  if (fill) fill.style.width = '0%';
+
+  const startTime = Date.now();
+  if (simProgressTimer) clearInterval(simProgressTimer);
+
+  simProgressTimer = setInterval(() => {
+    if (!isSimulating) return;
+    const elapsed = Date.now() - startTime;
+    const pct = Math.min(100, Math.round((elapsed / simTotalMs) * 100));
+    if (fill) fill.style.width = `${pct}%`;
+    const remSec = Math.max(0, Math.ceil((simTotalMs - elapsed) / 1000));
+    const counter = document.getElementById('sim-counter-text');
+    if (counter) {
+      counter.textContent = `فريم ${simFrameIndex + 1} من ${rotatorFramesList.length} (${currentFrame.name || 'بدون اسم'}) — متبقي ${remSec} ثواني`;
+    }
+  }, 100);
+
+  simTimer = setTimeout(() => {
+    if (!isSimulating) return;
+    if (simProgressTimer) clearInterval(simProgressTimer);
+
+    const mode = document.getElementById('rotationMode')?.value || 'sequential';
+    let nextIndex = 0;
+    if (mode === 'random') {
+      if (rotatorFramesList.length > 1) {
+        let r;
+        do {
+          r = Math.floor(Math.random() * rotatorFramesList.length);
+        } while (r === simFrameIndex);
+        nextIndex = r;
+      } else {
+        nextIndex = 0;
+      }
+    } else if (mode === 'pingpong') {
+      if (rotatorFramesList.length <= 1) {
+        nextIndex = 0;
+      } else {
+        nextIndex = simFrameIndex + simPingPongDir;
+        if (nextIndex >= rotatorFramesList.length) {
+          simPingPongDir = -1;
+          nextIndex = Math.max(0, rotatorFramesList.length - 2);
+        } else if (nextIndex < 0) {
+          simPingPongDir = 1;
+          nextIndex = Math.min(rotatorFramesList.length - 1, 1);
+        }
+      }
+    } else {
+      nextIndex = (simFrameIndex + 1) % rotatorFramesList.length;
+    }
+
+    simFrameIndex = nextIndex;
+    runSimFrame();
+  }, simTotalMs);
+}
+
+// ══════════════════════════════════════════
+//  WEBHOOK STUDIO & EMBED BUILDER (Feature 6)
+// ══════════════════════════════════════════
+let webhookFields = [];
+
+function setWebhookColor(hex) {
+  const picker = document.getElementById('wh-color-picker');
+  const text = document.getElementById('wh-color-hex');
+  if (picker) picker.value = hex;
+  if (text) text.value = hex;
+  updateWebhookEmbedPreview();
+  debouncedAutoSave(true);
+}
+
+function syncWebhookColor(val) {
+  const text = document.getElementById('wh-color-hex');
+  if (text) text.value = val;
+  updateWebhookEmbedPreview();
+  debouncedAutoSave(true);
+}
+
+function syncWebhookColorHex(val) {
+  const picker = document.getElementById('wh-color-picker');
+  if (picker && /^#[0-9A-F]{6}$/i.test(val)) {
+    picker.value = val;
+  }
+  updateWebhookEmbedPreview();
+  debouncedAutoSave(true);
+}
+
+function addWebhookField(name = '', value = '', inline = false) {
+  webhookFields.push({ name, value, inline });
+  renderWebhookFields();
+  updateWebhookEmbedPreview();
+  debouncedAutoSave(true);
+}
+
+function removeWebhookField(index) {
+  webhookFields.splice(index, 1);
+  renderWebhookFields();
+  updateWebhookEmbedPreview();
+  debouncedAutoSave(true);
+}
+
+function renderWebhookFields() {
+  const container = document.getElementById('wh-fields-list');
+  if (!container) return;
+
+  if (webhookFields.length === 0) {
+    container.innerHTML = `<div style="font-size:11px;color:var(--muted);padding:6px;text-align:center;">لا توجد حقول إضافية بعد. اضغط «+ إضافة حقل».</div>`;
+    return;
+  }
+
+  container.innerHTML = webhookFields.map((f, i) => `
+    <div class="wh-field-row">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;">
+        <input type="text" placeholder="عنوان الحقل (Name)..." value="${esc(f.name)}" oninput="webhookFields[${i}].name = this.value; updateWebhookEmbedPreview(); debouncedAutoSave(true)" style="flex:1;font-size:12px;padding:5px 8px;"/>
+        <label style="font-size:11px;color:var(--muted);display:flex;align-items:center;gap:4px;cursor:pointer;white-space:nowrap;">
+          <input type="checkbox" ${f.inline ? 'checked' : ''} onchange="webhookFields[${i}].inline = this.checked; updateWebhookEmbedPreview(); debouncedAutoSave(true)"/> بجانب بعض (Inline)
+        </label>
+        <button type="button" class="btn-sm btn-3d-red" onclick="removeWebhookField(${i})" title="حذف الحقل" style="padding:2px 6px;">✕</button>
+      </div>
+      <textarea rows="2" placeholder="محتوى الحقل (Value)..." oninput="webhookFields[${i}].value = this.value; updateWebhookEmbedPreview(); debouncedAutoSave(true)" style="background:var(--surface3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:inherit;font-size:11px;padding:6px 8px;width:100%;outline:none;resize:vertical;">${esc(f.value)}</textarea>
+    </div>
+  `).join('');
+}
+
+function updateWebhookEmbedPreview() {
+  const username = document.getElementById('wh-username')?.value.trim() || 'Naml Webhook';
+  const avatar = document.getElementById('wh-avatar')?.value.trim() || 'https://cdn.discordapp.com/embed/avatars/0.png';
+  const content = document.getElementById('wh-content')?.value || '';
+  const authorName = document.getElementById('wh-author-name')?.value.trim();
+  const authorIcon = document.getElementById('wh-author-icon')?.value.trim();
+  const title = document.getElementById('wh-title')?.value.trim();
+  const titleUrl = document.getElementById('wh-title-url')?.value.trim();
+  const desc = document.getElementById('wh-desc')?.value.trim();
+  const colorHex = document.getElementById('wh-color-hex')?.value.trim() || '#5865f2';
+  const image = document.getElementById('wh-image-url')?.value.trim();
+  const thumb = document.getElementById('wh-thumb-url')?.value.trim();
+  const footerText = document.getElementById('wh-footer-text')?.value.trim();
+  const footerIcon = document.getElementById('wh-footer-icon')?.value.trim();
+  const includeTimestamp = document.getElementById('wh-include-timestamp')?.checked;
+
+  // Header
+  const userEl = document.getElementById('wh-prev-username');
+  if (userEl) userEl.textContent = username;
+  const avEl = document.getElementById('wh-prev-avatar');
+  if (avEl) avEl.src = avatar;
+
+  // Content
+  const contentEl = document.getElementById('wh-prev-content');
+  if (contentEl) {
+    if (content) {
+      contentEl.textContent = content;
+      contentEl.style.display = 'block';
+    } else {
+      contentEl.style.display = 'none';
+    }
+  }
+
+  // Embed Card
+  const embedCard = document.getElementById('wh-embed-card');
+  if (embedCard) {
+    embedCard.style.borderRightColor = colorHex;
+  }
+
+  // Author
+  const authorWrap = document.getElementById('wh-prev-author-wrap');
+  const authorNameEl = document.getElementById('wh-prev-author-name');
+  const authorImgEl = document.getElementById('wh-prev-author-img');
+  if (authorWrap && authorNameEl) {
+    if (authorName) {
+      authorWrap.style.display = 'flex';
+      authorNameEl.textContent = authorName;
+      if (authorImgEl) {
+        if (authorIcon) {
+          authorImgEl.src = authorIcon;
+          authorImgEl.style.display = 'block';
+        } else {
+          authorImgEl.style.display = 'none';
+        }
+      }
+    } else {
+      authorWrap.style.display = 'none';
+    }
+  }
+
+  // Thumbnail
+  const thumbEl = document.getElementById('wh-prev-thumb');
+  if (thumbEl) {
+    if (thumb) {
+      thumbEl.src = thumb;
+      thumbEl.style.display = 'block';
+    } else {
+      thumbEl.style.display = 'none';
+    }
+  }
+
+  // Title
+  const titleEl = document.getElementById('wh-prev-title');
+  if (titleEl) {
+    if (title) {
+      titleEl.textContent = title;
+      titleEl.style.display = 'block';
+      if (titleUrl) {
+        titleEl.href = titleUrl;
+        titleEl.style.cursor = 'pointer';
+      } else {
+        titleEl.removeAttribute('href');
+        titleEl.style.cursor = 'default';
+      }
+    } else {
+      titleEl.style.display = 'none';
+    }
+  }
+
+  // Description
+  const descEl = document.getElementById('wh-prev-desc');
+  if (descEl) {
+    if (desc) {
+      descEl.textContent = desc;
+      descEl.style.display = 'block';
+    } else {
+      descEl.style.display = 'none';
+    }
+  }
+
+  // Fields
+  const fieldsContainer = document.getElementById('wh-prev-fields');
+  if (fieldsContainer) {
+    const validFields = webhookFields.filter(f => f.name || f.value);
+    if (validFields.length > 0) {
+      fieldsContainer.style.display = 'grid';
+      fieldsContainer.innerHTML = validFields.map(f => `
+        <div class="wh-field" style="${f.inline ? 'grid-column: span 1;' : 'grid-column: 1 / -1;'}">
+          <div class="wh-field-name">${esc(f.name || '—')}</div>
+          <div class="wh-field-val">${esc(f.value || '—')}</div>
+        </div>
+      `).join('');
+    } else {
+      fieldsContainer.style.display = 'none';
+      fieldsContainer.innerHTML = '';
+    }
+  }
+
+  // Image
+  const imgEl = document.getElementById('wh-prev-image');
+  if (imgEl) {
+    if (image) {
+      imgEl.src = image;
+      imgEl.style.display = 'block';
+    } else {
+      imgEl.style.display = 'none';
+    }
+  }
+
+  // Footer
+  const footerWrap = document.getElementById('wh-prev-footer-wrap');
+  const footerTextEl = document.getElementById('wh-prev-footer-text');
+  const footerImgEl = document.getElementById('wh-prev-footer-icon');
+  const footerTimeEl = document.getElementById('wh-prev-footer-time');
+
+  if (footerWrap) {
+    if (footerText || includeTimestamp) {
+      footerWrap.style.display = 'flex';
+      if (footerTextEl) footerTextEl.textContent = footerText || '';
+      if (footerImgEl) {
+        if (footerIcon) {
+          footerImgEl.src = footerIcon;
+          footerImgEl.style.display = 'block';
+        } else {
+          footerImgEl.style.display = 'none';
+        }
+      }
+      if (footerTimeEl) {
+        if (includeTimestamp) {
+          const now = new Date();
+          footerTimeEl.textContent = `• اليوم الساعة ${now.getHours() % 12 || 12}:${String(now.getMinutes()).padStart(2, '0')}`;
+          footerTimeEl.style.display = 'inline';
+        } else {
+          footerTimeEl.style.display = 'none';
+        }
+      }
+    } else {
+      footerWrap.style.display = 'none';
+    }
+  }
+}
+
+function buildWebhookPayload() {
+  const username = document.getElementById('wh-username')?.value.trim();
+  const avatar = document.getElementById('wh-avatar')?.value.trim();
+  const content = document.getElementById('wh-content')?.value;
+  const authorName = document.getElementById('wh-author-name')?.value.trim();
+  const authorIcon = document.getElementById('wh-author-icon')?.value.trim();
+  const title = document.getElementById('wh-title')?.value.trim();
+  const titleUrl = document.getElementById('wh-title-url')?.value.trim();
+  const desc = document.getElementById('wh-desc')?.value.trim();
+  const colorHex = document.getElementById('wh-color-hex')?.value.trim() || '#5865f2';
+  const image = document.getElementById('wh-image-url')?.value.trim();
+  const thumb = document.getElementById('wh-thumb-url')?.value.trim();
+  const footerText = document.getElementById('wh-footer-text')?.value.trim();
+  const footerIcon = document.getElementById('wh-footer-icon')?.value.trim();
+  const includeTimestamp = document.getElementById('wh-include-timestamp')?.checked;
+
+  const payload = {};
+  if (username) payload.username = username;
+  if (avatar) payload.avatar_url = avatar;
+  if (content) payload.content = content;
+
+  const embed = {};
+  if (title) embed.title = title;
+  if (titleUrl) embed.url = titleUrl;
+  if (desc) embed.description = desc;
+
+  try {
+    const cleanHex = colorHex.replace('#', '');
+    embed.color = parseInt(cleanHex, 16);
+  } catch (e) {
+    embed.color = 0x5865f2;
+  }
+
+  if (authorName) {
+    embed.author = { name: authorName };
+    if (authorIcon) embed.author.icon_url = authorIcon;
+  }
+
+  if (image) embed.image = { url: image };
+  if (thumb) embed.thumbnail = { url: thumb };
+
+  const validFields = webhookFields.filter(f => f.name || f.value);
+  if (validFields.length > 0) {
+    embed.fields = validFields.map(f => ({
+      name: f.name || '\u200B',
+      value: f.value || '\u200B',
+      inline: !!f.inline
+    }));
+  }
+
+  if (footerText) {
+    embed.footer = { text: footerText };
+    if (footerIcon) embed.footer.icon_url = footerIcon;
+  }
+
+  if (includeTimestamp) {
+    embed.timestamp = new Date().toISOString();
+  }
+
+  if (Object.keys(embed).length > 1 || embed.title || embed.description || (embed.fields && embed.fields.length > 0)) {
+    payload.embeds = [embed];
+  }
+
+  return payload;
+}
+
+function copyWebhookJson() {
+  const payload = buildWebhookPayload();
+  const jsonStr = JSON.stringify(payload, null, 2);
+  navigator.clipboard.writeText(jsonStr).then(() => {
+    toast('📋 تم نسخ كود الـ JSON إلى الحافظة بنجاح', 'success');
+  }).catch(() => {
+    toast('❌ تعذر نسخ الكود', 'error');
+  });
+}
+
+function resetWebhookForm() {
+  ['wh-username','wh-avatar','wh-content','wh-author-name','wh-author-icon','wh-title','wh-title-url','wh-desc','wh-image-url','wh-thumb-url','wh-footer-text','wh-footer-icon'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  webhookFields = [];
+  setWebhookColor('#5865f2');
+  renderWebhookFields();
+  updateWebhookEmbedPreview();
+  toast('↺ تم مسح بيانات الويب هوك والبدء من جديد', 'info');
+}
+
+function applyWebhookTemplate(key) {
+  if (key === 'announcement') {
+    document.getElementById('wh-username').value = 'إعلانات السيرفر الرسمية';
+    document.getElementById('wh-avatar').value = 'https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png';
+    document.getElementById('wh-content').value = '@everyone إعلان هام لجميع الأعضاء!';
+    document.getElementById('wh-author-name').value = 'مجلس إدارة السيرفر';
+    document.getElementById('wh-author-icon').value = 'https://cdn-icons-png.flaticon.com/512/1828/1828884.png';
+    document.getElementById('wh-title').value = '📢 تحديثات وفعاليات جديدة قادمة للسيرفر';
+    document.getElementById('wh-title-url').value = 'https://discord.gg';
+    document.getElementById('wh-desc').value = 'يسعدنا أن نعلن لجميع أعضائنا الكرام عن إطلاق حزمة فعاليات وبطولات أسبوعية بجوائز قيّمة!\n\nنتمنى لكم قضاء أمتع الأوقات معنا.';
+    setWebhookColor('#5865f2');
+    webhookFields = [
+      { name: '🏆 موعد الفعالية الأولى', value: 'الجمعة القادم الساعة 8:00 مساءً بتوقيت مكة', inline: true },
+      { name: '🎁 مجموع الجوائز', value: 'اشتراكات نيترو ورتب حصرية ومكافآت', inline: true }
+    ];
+    document.getElementById('wh-image-url').value = 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=1200&q=80';
+    document.getElementById('wh-thumb-url').value = 'https://cdn-icons-png.flaticon.com/512/785/785116.png';
+    document.getElementById('wh-footer-text').value = 'سنتري كي اس اي • مجتمع ديسكورد العربي الأول';
+    document.getElementById('wh-footer-icon').value = 'https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png';
+  } else if (key === 'rules') {
+    document.getElementById('wh-username').value = 'دليل وقوانين السيرفر';
+    document.getElementById('wh-avatar').value = 'https://cdn-icons-png.flaticon.com/512/906/906324.png';
+    document.getElementById('wh-content').value = '';
+    document.getElementById('wh-author-name').value = 'إدارة النظام والأمن';
+    document.getElementById('wh-title').value = '📜 قوانين وإرشادات السيرفر الأساسية';
+    document.getElementById('wh-desc').value = 'للحفاظ على بيئة محترمة وممتعة للجميع، يُرجى من جميع الأعضاء الالتزام بالقوانين التالية:\n\n1. الاحترام المتبادل بين جميع الأعضاء وتجنب الخلافات.\n2. يُمنع نشر الروابط والإعلانات دون إذن مسبق.\n3. الالتزام بمواضيع الرومات المحددة.\n4. الامتثال لتوجيهات المشرفين والإدارة.';
+    setWebhookColor('#f59e0b');
+    webhookFields = [
+      { name: '🛡️ الإبلاغ عن المخالفات', value: 'تواصل مع أي مشرف متواجد أو افتح تذكرة دعم', inline: true },
+      { name: '⚖️ العقوبات', value: 'تحذير ← ميوت مؤقت ← حظر نهائي في حال التكرار', inline: true }
+    ];
+    document.getElementById('wh-image-url').value = '';
+    document.getElementById('wh-thumb-url').value = 'https://cdn-icons-png.flaticon.com/512/1006/1006771.png';
+    document.getElementById('wh-footer-text').value = 'سنتري كي اس اي • نتمنى لكم إقامة طيبة';
+  } else if (key === 'update') {
+    document.getElementById('wh-username').value = 'نامل — تحديثات النظام';
+    document.getElementById('wh-avatar').value = 'https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png';
+    document.getElementById('wh-content').value = '🚀 صدور التحديث الضخم نامل الإصدار 3.0.0 (Naml v3.0.0)!';
+    document.getElementById('wh-author-name').value = 'QZV سنتري كي اس اي';
+    document.getElementById('wh-title').value = '🎉 إطلاق نامل 3.0.0 — قفزة نوعية في عالم الـ Rich Presence';
+    document.getElementById('wh-desc').value = 'يسرنا تقديم النسخة الجديدة كلياً من نامل الغنية بالميزات الاستثنائية للتحكم بالظهور وإدارة البوتات والويب هوك.';
+    setWebhookColor('#22c55e');
+    webhookFields = [
+      { name: '🎮 أنواع النشاط المخصصة', value: 'دعم البث المباشر والموسيقى والمشاهدة والتنافس', inline: true },
+      { name: '⏱ فريمات متحركة مستقلة', value: 'تحديد وقت مستقل لكل فريم وأنماط عشوائية وذهاب وإياب', inline: true },
+      { name: '🎵 وسائط الموسيقى الحية', value: 'اكتشاف أغاني Spotify والوسائط تلقائياً وإظهارها فوراً', inline: true },
+      { name: '📡 استوديو الويب هوك', value: 'تصميم وإرسال Embeds ورسائل غنية لسيرفرك بنقرة زر', inline: true }
+    ];
+    document.getElementById('wh-image-url').value = 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=1200&q=80';
+    document.getElementById('wh-thumb-url').value = 'https://cdn-icons-png.flaticon.com/512/5968/5968819.png';
+    document.getElementById('wh-footer-text').value = 'جميع الحقوق محفوظة لـ QZV سنتري كي اس اي';
+  } else if (key === 'welcome') {
+    document.getElementById('wh-username').value = 'مساعد الترحيب';
+    document.getElementById('wh-avatar').value = 'https://cdn-icons-png.flaticon.com/512/1828/1828884.png';
+    document.getElementById('wh-content').value = 'أهلاً وسهلاً بك في سيرفرنا! 👋';
+    document.getElementById('wh-author-name').value = 'ترحيب بالأعضاء الجدد';
+    document.getElementById('wh-title').value = 'نورت السيرفر وانضمامك يسعدنا! 🌟';
+    document.getElementById('wh-desc').value = 'نتمنى أن تجد في مجتمعنا كل ما يفيدك ويمتعك. خذ جولة في الرومات وتعرف على الأصدقاء.';
+    setWebhookColor('#eb459e');
+    webhookFields = [
+      { name: '📌 البداية', value: 'تفضل بالاطلاع على القوانين في روم الإرشادات', inline: true },
+      { name: '💬 الدردشة', value: 'شارك معنا الحديث في الشات العام', inline: true }
+    ];
+    document.getElementById('wh-thumb-url').value = 'https://cdn-icons-png.flaticon.com/512/174/174872.png';
+    document.getElementById('wh-footer-text').value = 'سنتري كي اس اي • مجتمع القادة والمبدعين';
+  }
+
+  renderWebhookFields();
+  updateWebhookEmbedPreview();
+  toast('✨ تم تطبيق القالب بنجاح', 'success');
+}
+
+async function sendDiscordWebhook() {
+  const url = document.getElementById('wh-url')?.value.trim();
+  if (!url) {
+    toast('⚠️ يُرجى إدخال رابط الويب هوك (Webhook URL) أولاً', 'error');
+    document.getElementById('wh-url')?.focus();
+    return;
+  }
+  if (!url.startsWith('https://discord.com/api/webhooks/')) {
+    toast('⚠️ رابط الويب هوك غير صالح، يجب أن يبدأ بـ https://discord.com/api/webhooks/', 'error');
+    return;
+  }
+
+  const payload = buildWebhookPayload();
+  if (!payload.content && (!payload.embeds || payload.embeds.length === 0)) {
+    toast('⚠️ يُرجى كتابة محتوى للرسالة أو تصميم Embed قبل الإرسال', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('btn-send-webhook');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> جاري الإرسال...';
+  }
+
+  const statusMsg = document.getElementById('wh-status-msg');
+  if (statusMsg) statusMsg.style.display = 'none';
+
+  try {
+    const res = await window.rpc.sendWebhook({ webhookUrl: url, payload });
+    if (res?.success) {
+      toast('🚀 تم إرسال رسالة الويب هوك إلى ديسكورد بنجاح!', 'success');
+      if (statusMsg) {
+        statusMsg.className = 'msg-result success';
+        statusMsg.style.display = 'block';
+        statusMsg.style.background = 'rgba(34,197,94,0.15)';
+        statusMsg.style.color = '#22c55e';
+        statusMsg.style.border = '1px solid rgba(34,197,94,0.3)';
+        statusMsg.textContent = '✅ تم إرسال الرسالة إلى ديسكورد بنجاح (HTTP 204)';
+      }
+    } else {
+      toast('❌ فشل إرسال الويب هوك: ' + (res?.error || 'خطأ غير معروف'), 'error');
+      if (statusMsg) {
+        statusMsg.className = 'msg-result error';
+        statusMsg.style.display = 'block';
+        statusMsg.style.background = 'rgba(239,68,68,0.15)';
+        statusMsg.style.color = '#ef4444';
+        statusMsg.style.border = '1px solid rgba(239,68,68,0.3)';
+        statusMsg.textContent = '❌ فشل الإرسال: ' + (res?.error || 'تحقق من صحة رابط الويب هوك والبيانات');
+      }
+    }
+  } catch (err) {
+    toast('❌ حدث خطأ أثناء إرسال الويب هوك: ' + err.message, 'error');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> إرسال الآن 🚀';
+    }
+  }
+}
+
 

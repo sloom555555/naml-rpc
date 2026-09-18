@@ -342,6 +342,113 @@ function getSystemMetricsText(format = 'full') {
   return `الرام: ${usedGB}GB / ${totalGB}GB (${ramPercent}%) | المعالج: ${cpuLoad}%`;
 }
 
+let rotatorTimer = null;
+let rotatorPingPongDir = 1;
+
+function clearRotatorTimer() {
+  if (rotatorTimer) {
+    clearTimeout(rotatorTimer);
+    rotatorTimer = null;
+  }
+}
+
+function detectCurrentMedia() {
+  return new Promise((resolve) => {
+    if (process.platform !== 'win32') return resolve({ active: false });
+    const script = `
+      $sp = Get-Process spotify -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -and $_.MainWindowTitle -ne 'Spotify' -and $_.MainWindowTitle -ne 'Spotify Free' -and $_.MainWindowTitle -ne 'Spotify Premium' -and $_.MainWindowTitle -match ' - ' } | Select-Object -First 1
+      if ($sp) {
+        $parts = $sp.MainWindowTitle -split ' - ', 2
+        Write-Output "SPOTIFY:::$($parts[0].Trim()):::$($parts[1].Trim())"
+        exit 0
+      }
+      $br = Get-Process chrome, msedge, brave, firefox, opera, vlc -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -and ($_.MainWindowTitle -match ' - YouTube' -or $_.MainWindowTitle -match 'YouTube Music' -or $_.MainWindowTitle -match 'SoundCloud' -or $_.ProcessName -eq 'vlc') } | Select-Object -First 1
+      if ($br) {
+        $raw = $br.MainWindowTitle -replace ' - YouTube.*$', '' -replace ' - Google Chrome$', '' -replace ' - Microsoft Edge$', '' -replace ' - Brave$', ''
+        if ($raw -match ' - ') {
+          $bParts = $raw -split ' - ', 2
+          Write-Output "MEDIA:::$($bParts[0].Trim()):::$($bParts[1].Trim())"
+        } else {
+          Write-Output "MEDIA:::YouTube:::$($raw.Trim())"
+        }
+        exit 0
+      }
+      Write-Output "NONE"
+    `;
+    exec(`powershell -NoProfile -Command "${script.replace(/\r?\n/g, ' ')}"`, { timeout: 2500 }, (err, stdout) => {
+      if (err || !stdout) return resolve({ active: false });
+      const str = stdout.trim();
+      if (str.startsWith('SPOTIFY:::')) {
+        const parts = str.split(':::');
+        return resolve({ active: true, player: 'Spotify', artist: parts[1], title: parts[2] });
+      }
+      if (str.startsWith('MEDIA:::')) {
+        const parts = str.split(':::');
+        return resolve({ active: true, player: 'Media', artist: parts[1], title: parts[2] });
+      }
+      resolve({ active: false });
+    });
+  });
+}
+
+function sendDiscordActivity(client, activity, pid = process.pid) {
+  if (!client) return Promise.resolve();
+  const args = activity;
+  let timestamps;
+  let assets;
+  let party;
+  let secrets;
+  if (args.startTimestamp || args.endTimestamp) {
+    timestamps = {
+      start: args.startTimestamp,
+      end: args.endTimestamp,
+    };
+    if (timestamps.start instanceof Date) timestamps.start = Math.round(timestamps.start.getTime());
+    if (timestamps.end instanceof Date) timestamps.end = Math.round(timestamps.end.getTime());
+  }
+  if (args.largeImageKey || args.largeImageText || args.smallImageKey || args.smallImageText) {
+    assets = {
+      large_image: args.largeImageKey,
+      large_text: args.largeImageText,
+      small_image: args.smallImageKey,
+      small_text: args.smallImageText,
+    };
+  }
+  if (args.partySize || args.partyId || args.partyMax) {
+    party = { id: args.partyId };
+    if (args.partySize || args.partyMax) {
+      party.size = [args.partySize, args.partyMax];
+    }
+  }
+  if (args.matchSecret || args.joinSecret || args.spectateSecret) {
+    secrets = {
+      match: args.matchSecret,
+      join: args.joinSecret,
+      spectate: args.spectateSecret,
+    };
+  }
+
+  const payload = {
+    state: args.state,
+    details: args.details,
+    timestamps,
+    assets,
+    party,
+    secrets,
+    buttons: args.buttons,
+    instance: !!args.instance,
+    type: args.type !== undefined ? parseInt(args.type) : 0
+  };
+  if (payload.type === 1 && args.url) {
+    payload.url = args.url;
+  }
+
+  return client.request('SET_ACTIVITY', {
+    pid,
+    activity: payload
+  });
+}
+
 async function startRpc(config) {
   if (activeRpcClient) {
     try {
@@ -356,6 +463,7 @@ async function startRpc(config) {
     clearInterval(rpcInterval);
     rpcInterval = null;
   }
+  clearRotatorTimer();
 
   // Check if Discord process is running first
   const isUp = await checkDiscordRunning();
@@ -391,6 +499,7 @@ async function startRpc(config) {
             clearInterval(rpcInterval);
             rpcInterval = null;
           }
+          clearRotatorTimer();
         }
         if (mainWindow && mainWindow.webContents) {
           mainWindow.webContents.send('rpc-stopped');
@@ -400,29 +509,110 @@ async function startRpc(config) {
       if (config.rotationEnabled && Array.isArray(config.rotationFrames) && config.rotationFrames.length > 0) {
         rotationFrames = config.rotationFrames;
         currentFrameIndex = 0;
-        const intervalMs = Math.max(3000, (parseInt(config.rotationInterval) || 5) * 1000);
+        rotatorPingPongDir = 1;
 
-        const applyNextFrame = () => {
+        const scheduleNextFrame = async () => {
           if (!activeRpcClient) return;
+
+          // Check if live media mode is enabled and music is currently playing
+          if (config.liveMediaEnabled) {
+            try {
+              const media = await detectCurrentMedia();
+              if (media && media.active && media.title) {
+                const mediaConfig = {
+                  ...config,
+                  activityType: 2, // Listening to
+                  details: String(media.title).substring(0, 128),
+                  state: `by ${media.artist || 'Unknown'}`.substring(0, 128),
+                  largeImageKey: media.player === 'Spotify' 
+                    ? 'https://cdn-icons-png.flaticon.com/512/174/174872.png'
+                    : 'https://cdn-icons-png.flaticon.com/512/1384/1384060.png',
+                  largeImageText: media.title,
+                  smallImageKey: 'https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png',
+                  smallImageText: `Playing on ${media.player}`
+                };
+                activeActivity = buildActivity(mediaConfig);
+                sendDiscordActivity(activeRpcClient, activeActivity).catch(() => {});
+                rotatorTimer = setTimeout(scheduleNextFrame, 5000);
+                return;
+              }
+            } catch (err) {}
+          }
+
           const currentFrame = rotationFrames[currentFrameIndex];
+          if (!currentFrame) return;
+
           const mergedConfig = { ...config, ...currentFrame };
           activeActivity = buildActivity(mergedConfig);
-          activeRpcClient.setActivity(activeActivity).catch(() => {});
-          currentFrameIndex = (currentFrameIndex + 1) % rotationFrames.length;
+          sendDiscordActivity(activeRpcClient, activeActivity).catch(() => {});
+
+          const frameDurationSec = Math.max(2, parseInt(currentFrame.duration) || parseInt(config.rotationInterval) || 5);
+
+          const mode = config.rotationMode || 'sequential';
+          let nextIndex = 0;
+          if (mode === 'random') {
+            if (rotationFrames.length > 1) {
+              let r;
+              do {
+                r = Math.floor(Math.random() * rotationFrames.length);
+              } while (r === currentFrameIndex);
+              nextIndex = r;
+            } else {
+              nextIndex = 0;
+            }
+          } else if (mode === 'pingpong') {
+            if (rotationFrames.length <= 1) {
+              nextIndex = 0;
+            } else {
+              nextIndex = currentFrameIndex + rotatorPingPongDir;
+              if (nextIndex >= rotationFrames.length) {
+                rotatorPingPongDir = -1;
+                nextIndex = Math.max(0, rotationFrames.length - 2);
+              } else if (nextIndex < 0) {
+                rotatorPingPongDir = 1;
+                nextIndex = Math.min(rotationFrames.length - 1, 1);
+              }
+            }
+          } else {
+            nextIndex = (currentFrameIndex + 1) % rotationFrames.length;
+          }
+
+          currentFrameIndex = nextIndex;
+          rotatorTimer = setTimeout(scheduleNextFrame, frameDurationSec * 1000);
         };
 
-        applyNextFrame();
-        rpcInterval = setInterval(applyNextFrame, intervalMs);
+        scheduleNextFrame();
       } else {
-        activeActivity = buildActivity(config);
-        client.setActivity(activeActivity).catch(() => {});
-
-        rpcInterval = setInterval(() => {
-          if (activeRpcClient && activeActivity) {
-            const freshActivity = config.enableSystemMetrics ? buildActivity(config) : activeActivity;
-            activeRpcClient.setActivity(freshActivity).catch(() => {});
+        const updateStaticPresence = async () => {
+          if (!activeRpcClient) return;
+          if (config.liveMediaEnabled) {
+            try {
+              const media = await detectCurrentMedia();
+              if (media && media.active && media.title) {
+                const mediaConfig = {
+                  ...config,
+                  activityType: 2,
+                  details: String(media.title).substring(0, 128),
+                  state: `by ${media.artist || 'Unknown'}`.substring(0, 128),
+                  largeImageKey: media.player === 'Spotify' 
+                    ? 'https://cdn-icons-png.flaticon.com/512/174/174872.png'
+                    : 'https://cdn-icons-png.flaticon.com/512/1384/1384060.png',
+                  largeImageText: media.title,
+                  smallImageKey: 'https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png',
+                  smallImageText: `Playing on ${media.player}`
+                };
+                activeActivity = buildActivity(mediaConfig);
+                sendDiscordActivity(activeRpcClient, activeActivity).catch(() => {});
+                return;
+              }
+            } catch (err) {}
           }
-        }, 15000);
+          activeActivity = buildActivity(config);
+          sendDiscordActivity(activeRpcClient, activeActivity).catch(() => {});
+        };
+
+        updateStaticPresence();
+        rpcInterval = setInterval(updateStaticPresence, config.liveMediaEnabled ? 5000 : 15000);
       }
 
       if (!resolved) {
@@ -495,6 +685,13 @@ function buildActivity(config) {
   if (config.matchSecret) activity.matchSecret = config.matchSecret;
   if (config.instance) activity.instance = true;
 
+  if (config.activityType !== undefined && config.activityType !== null) {
+    activity.type = parseInt(config.activityType) || 0;
+  }
+  if (activity.type === 1 && config.streamUrl) {
+    activity.url = config.streamUrl;
+  }
+
   const buttons = [];
   if (config.button1Label && config.button1Url) buttons.push({ label: config.button1Label, url: config.button1Url });
   if (config.button2Label && config.button2Url) buttons.push({ label: config.button2Label, url: config.button2Url });
@@ -504,6 +701,7 @@ function buildActivity(config) {
 }
 
 async function stopRpc() {
+  clearRotatorTimer();
   if (rpcInterval) {
     clearInterval(rpcInterval);
     rpcInterval = null;
@@ -559,9 +757,9 @@ ipcMain.handle('open-external', async (_e, url) => {
 
 ipcMain.handle('check-for-updates', async () => {
   return {
-    currentVersion: '2.0.0',
+    currentVersion: '3.0.0',
     isLatest: true,
-    latestVersion: '2.0.0',
+    latestVersion: '3.0.0',
     releaseDate: '2026-09-18',
     changelog: [
       {
@@ -895,7 +1093,7 @@ ipcMain.handle('export-backup', async () => {
   try {
     const backupData = {
       app: 'naml',
-      version: '2.0.0',
+      version: '3.0.0',
       exportedAt: new Date().toISOString(),
       rights: 'جميع الحقوق محفوظة لـ QZV سنتري كي اس اي',
       config: loadConfig(),
@@ -916,6 +1114,47 @@ ipcMain.handle('export-backup', async () => {
   } catch (e) {
     return { success: false, error: e.message };
   }
+});
+
+ipcMain.handle('get-current-media', async () => {
+  return await detectCurrentMedia();
+});
+
+ipcMain.handle('discord-send-webhook', async (_e, { webhookUrl, payload }) => {
+  if (!webhookUrl || typeof webhookUrl !== 'string' || !webhookUrl.startsWith('https://discord.com/api/webhooks/')) {
+    return { success: false, error: 'رابط الويب هوك غير صالح. يجب أن يبدأ بـ https://discord.com/api/webhooks/' };
+  }
+
+  return new Promise((resolve) => {
+    try {
+      const url = new URL(webhookUrl);
+      const dataStr = JSON.stringify(payload);
+      const req = https.request({
+        hostname: url.hostname,
+        path: url.pathname + url.search,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(dataStr)
+        }
+      }, (res) => {
+        let body = '';
+        res.on('data', chunk => body += chunk);
+        res.on('end', () => {
+          if (res.statusCode >= 200 && res.statusCode < 300) {
+            resolve({ success: true, status: res.statusCode });
+          } else {
+            resolve({ success: false, status: res.statusCode, error: body || `HTTP ${res.statusCode}` });
+          }
+        });
+      });
+      req.on('error', (e) => resolve({ success: false, error: e.message }));
+      req.write(dataStr);
+      req.end();
+    } catch (err) {
+      resolve({ success: false, error: err.message });
+    }
+  });
 });
 
 ipcMain.handle('import-backup', async () => {
@@ -1072,7 +1311,7 @@ function updateTrayMenu() {
   const rpcOn = activeRpcClient !== null;
 
   const menu = Menu.buildFromTemplate([
-    { label: `نامل (v2.0.0) — ${rpcOn ? '🟢 الـ RPC نشط' : '⚪ غير نشط'}`, enabled: false },
+    { label: `نامل (v3.0.0) — ${rpcOn ? '🟢 الـ RPC نشط' : '⚪ غير نشط'}`, enabled: false },
     { label: `استهلاك الذاكرة: ~${ramMB} MB`, enabled: false },
     { type: 'separator' },
     { label: 'إظهار التطبيق', click: () => { mainWindow?.show(); mainWindow?.focus(); mainWindow?.webContents.send('app-shown'); updateTrayMenu(); } },

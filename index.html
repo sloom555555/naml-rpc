@@ -359,6 +359,272 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* ── Webhook Studio & Embed Styling ── */
+.wh-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+@media (min-width: 800px) {
+  .wh-grid {
+    grid-template-columns: 1.1fr 0.9fr;
+  }
+}
+.wh-embed-preview {
+  background: #313338;
+  border: 1px solid #1e1f22;
+  border-radius: 8px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  direction: rtl;
+  text-align: right;
+}
+.wh-prev-msg-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.wh-prev-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #1e1f22;
+}
+.wh-prev-user {
+  font-size: 14px;
+  font-weight: 700;
+  color: #f2f3f5;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.wh-bot-tag {
+  background: #5865f2;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 4px;
+  line-height: 1.2;
+}
+.wh-prev-time {
+  font-size: 11px;
+  color: #949ba4;
+}
+.wh-prev-text {
+  font-size: 13px;
+  color: #dbdee1;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.wh-embed-card {
+  background: #2b2d31;
+  border-right: 4px solid #5865f2;
+  border-left: none;
+  border-radius: 4px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.wh-embed-author {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #f2f3f5;
+}
+.wh-embed-author-img {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.wh-embed-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #00a8fc;
+  text-decoration: none;
+}
+.wh-embed-desc {
+  font-size: 12px;
+  color: #dbdee1;
+  white-space: pre-wrap;
+  line-height: 1.4;
+}
+.wh-embed-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 8px;
+  margin-top: 4px;
+}
+.wh-field-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: #f2f3f5;
+}
+.wh-field-val {
+  font-size: 12px;
+  color: #dbdee1;
+  white-space: pre-wrap;
+}
+.wh-embed-img {
+  max-width: 100%;
+  max-height: 240px;
+  border-radius: 4px;
+  object-fit: cover;
+  margin-top: 4px;
+}
+.wh-embed-thumb {
+  width: 54px;
+  height: 54px;
+  border-radius: 4px;
+  object-fit: cover;
+  float: left;
+  margin-right: 8px;
+}
+.wh-embed-footer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #949ba4;
+  margin-top: 4px;
+}
+.wh-embed-footer-img {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.color-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.color-swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid var(--border);
+  transition: transform 0.15s;
+}
+.color-swatch:hover {
+  transform: scale(1.15);
+}
+.wh-field-row {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+/* ── Live Rotator Simulation Bar ── */
+.sim-bar {
+  width: 100%;
+  max-width: 440px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+  position: relative;
+  overflow: hidden;
+}
+.sim-bar-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.sim-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sim-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--muted);
+  box-shadow: 0 0 6px rgba(100,116,139,0.4);
+  transition: all 0.3s;
+}
+.sim-status-dot.active {
+  background: var(--accent2);
+  box-shadow: 0 0 8px var(--accent);
+  animation: pulse 1.5s infinite;
+}
+.sim-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+}
+.sim-sub {
+  font-size: 10px;
+  color: var(--muted);
+}
+.sim-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.sim-btn {
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.sim-btn:hover {
+  background: var(--surface1);
+  border-color: var(--accent2);
+  color: var(--accent2);
+}
+.sim-btn-play {
+  width: 32px;
+  height: 32px;
+  background: rgba(99, 102, 241, 0.15);
+  border-color: rgba(99, 102, 241, 0.4);
+  color: var(--accent2);
+}
+.sim-btn-play:hover {
+  background: var(--accent);
+  color: #fff;
+}
+.sim-progress-track {
+  width: 100%;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.sim-progress-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  transition: width 0.1s linear;
+}
 </style>
 </head>
 <body>
@@ -399,6 +665,10 @@
   <button class="tab" data-tab="bots" onclick="switchTab('bots')">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
     <span data-i18n="tab_bots">التوكنات</span>
+  </button>
+  <button class="tab" data-tab="webhook" onclick="switchTab('webhook')">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+    <span data-i18n="tab_webhook">ويب هوك</span>
   </button>
   <button class="tab" data-tab="preview" onclick="switchTab('preview')">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -458,6 +728,30 @@
             <button class="btn-link" onclick="window.rpc.openExternal('https://discord.com/developers/applications')" title="فتح Developer Portal">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
             </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Activity Type Selector -->
+      <div class="card">
+        <div class="card-title">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          نوع النشاط في ديسكورد (Activity Type)
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label>نوع الحالة</label>
+            <select id="activityType" onchange="onActivityTypeChange(); debouncedPreview(); debouncedAutoSave(true)" style="background:var(--surface3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:13px;padding:8px 11px;width:100%;outline:none">
+              <option value="0" selected>🎮 يلعب (Playing)</option>
+              <option value="1">🔴 يبث مباشر (Streaming - Twitch/YouTube)</option>
+              <option value="2">🎧 يستمع إلى (Listening to)</option>
+              <option value="3">📺 يشاهد (Watching)</option>
+              <option value="5">🏆 يتنافس في (Competing in)</option>
+            </select>
+          </div>
+          <div class="field" id="stream-url-field" style="display:none;">
+            <label>رابط البث (Twitch أو YouTube Live)</label>
+            <input type="text" id="streamUrl" placeholder="https://twitch.tv/..." oninput="debouncedPreview(); debouncedAutoSave(true)"/>
           </div>
         </div>
       </div>
@@ -649,9 +943,9 @@
         <div id="rotator-settings-area" style="display:none;margin-top:12px">
           <div class="row2">
             <div class="field">
-              <label data-i18n="rotator_interval_label">سرعة التنقل بين الفريمات</label>
+              <label data-i18n="rotator_interval_label">سرعة التنقل الافتراضية</label>
               <select id="rotationInterval" onchange="debouncedAutoSave(true)" style="background:var(--surface3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:13px;padding:8px 11px;width:100%;outline:none">
-                <option value="3">⚡ 3 ثواني (سريع جداً)</option>
+                <option value="3">⚡ 3 ثواني (سريع)</option>
                 <option value="5" selected>⏱ 5 ثواني (مثالي وموصى به)</option>
                 <option value="10">🕒 10 ثواني (مستقر)</option>
                 <option value="15">🧘 15 ثانية (هادئ وخفيف)</option>
@@ -668,6 +962,26 @@
                 <option value="designer">🎨 تصميم ومونتاج (Photoshop, Blender 3D)</option>
                 <option value="coffee">☕ استراحة وتركيز (Coffee Break & AFK)</option>
               </select>
+            </div>
+          </div>
+
+          <div class="row2" style="margin-top:8px;">
+            <div class="field">
+              <label>نمط التنقل بين الفريمات</label>
+              <select id="rotationMode" onchange="debouncedAutoSave(true)" style="background:var(--surface3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:13px;padding:8px 11px;width:100%;outline:none">
+                <option value="sequential" selected>🔄 متسلسل (1 ← 2 ← 3)</option>
+                <option value="random">🎲 عشوائي (Random)</option>
+                <option value="pingpong">🏓 ذهاب وإياب (Ping-Pong)</option>
+              </select>
+            </div>
+            <div class="field" style="display:flex;flex-direction:column;justify-content:center;">
+              <div class="toggle-row" style="margin-top:14px;padding:0;">
+                <div>
+                  <div class="toggle-label" style="font-size:12px;">مزامنة الموسيقى الحية 🎵</div>
+                  <div class="toggle-hint" style="font-size:10px;">إظهار الأغنية تلقائياً من Spotify/الوسائط</div>
+                </div>
+                <label class="switch"><input type="checkbox" id="liveMediaEnabled" onchange="debouncedAutoSave(true)"/><span class="slider"></span></label>
+              </div>
             </div>
           </div>
 
@@ -890,6 +1204,243 @@
   </div>
   </div>
 
+  <!-- ── TAB: WEBHOOK ── -->
+  <div class="tab-panel" id="panel-webhook">
+    <div class="scroll-area">
+      <div class="section-header">
+        <div>
+          <div class="section-title">استوديو إرسال الويب هوك (Discord Webhook Studio)</div>
+          <div class="section-sub">صمّم Embeds احترافية وأرسلها فورياً لأي روم في سيرفرك بضغطة زر واحدة</div>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button class="btn-3d btn-3d-blue" onclick="copyWebhookJson()" title="نسخ كود الـ JSON">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            نسخ JSON
+          </button>
+          <button class="btn-3d btn-3d-purple" onclick="sendDiscordWebhook()" id="btn-send-webhook">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            إرسال الآن 🚀
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Templates -->
+      <div class="card" style="margin-bottom:12px;padding:10px 14px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <span style="font-size:12px;font-weight:700;color:var(--text);">قوالب جاهزة سريعة (اضغط لتطبيق القالب بنقرة):</span>
+          <button type="button" class="btn-sm" onclick="resetWebhookForm()" style="font-size:11px;color:var(--muted);">مسح الكل ↺</button>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          <button type="button" class="icon-chip" onclick="applyWebhookTemplate('announcement')">📢 إعلان سيرفر رسمي</button>
+          <button type="button" class="icon-chip" onclick="applyWebhookTemplate('rules')">📜 قوانين وشروط السيرفر</button>
+          <button type="button" class="icon-chip" onclick="applyWebhookTemplate('update')">🚀 تحديث جديد ومميزات (v3.0.0)</button>
+          <button type="button" class="icon-chip" onclick="applyWebhookTemplate('welcome')">👋 رسالة ترحيب بالعضو الجديد</button>
+        </div>
+      </div>
+
+      <div class="wh-grid">
+        <!-- LEFT: BUILDER CONTROLS -->
+        <div style="display:flex;flex-direction:column;gap:12px;">
+
+          <!-- Webhook Endpoint & Sender Info -->
+          <div class="card">
+            <div class="card-title">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+              بيانات الويب هوك (Webhook Settings)
+            </div>
+            <div class="field">
+              <label>رابط الويب هوك (Webhook URL) *</label>
+              <input type="text" id="wh-url" placeholder="https://discord.com/api/webhooks/..." oninput="updateWebhookEmbedPreview(); debouncedAutoSave(true)"/>
+            </div>
+            <div class="row2">
+              <div class="field">
+                <label>اسم البوت المخصص (Username)</label>
+                <input type="text" id="wh-username" placeholder="مثال: نامل بوت" oninput="updateWebhookEmbedPreview(); debouncedAutoSave(true)"/>
+              </div>
+              <div class="field">
+                <label>رابط صورة البوت (Avatar URL)</label>
+                <input type="text" id="wh-avatar" placeholder="https://..." oninput="updateWebhookEmbedPreview(); debouncedAutoSave(true)"/>
+              </div>
+            </div>
+          </div>
+
+          <!-- Message Content (Regular text above embed) -->
+          <div class="card">
+            <div class="card-title">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              محتوى الرسالة العادية (Message Content)
+            </div>
+            <div class="field">
+              <label>نص المنشن أو التنبيه (اختياري - مثلاً @everyone)</label>
+              <textarea id="wh-content" rows="2" placeholder="اكتب نصاً يظهر خارج الـ Embed أو اتركه فارغاً..." oninput="updateWebhookEmbedPreview(); debouncedAutoSave(true)" style="background:var(--surface3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:13px;padding:8px 11px;width:100%;outline:none;resize:none"></textarea>
+            </div>
+          </div>
+
+          <!-- Embed Details -->
+          <div class="card">
+            <div class="card-title">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+              محتوى وتصميم الـ Embed
+            </div>
+
+            <!-- Author -->
+            <div class="row2">
+              <div class="field">
+                <label>اسم الكاتب (Author Name)</label>
+                <input type="text" id="wh-author-name" placeholder="مثال: إدارة السيرفر" oninput="updateWebhookEmbedPreview(); debouncedAutoSave(true)"/>
+              </div>
+              <div class="field">
+                <label>صورة الكاتب (Author Icon URL)</label>
+                <input type="text" id="wh-author-icon" placeholder="https://..." oninput="updateWebhookEmbedPreview(); debouncedAutoSave(true)"/>
+              </div>
+            </div>
+
+            <!-- Title & URL -->
+            <div class="row2">
+              <div class="field">
+                <label>عنوان الـ Embed (Title)</label>
+                <input type="text" id="wh-title" placeholder="عنوان رئيسي جذاب..." oninput="updateWebhookEmbedPreview(); debouncedAutoSave(true)"/>
+              </div>
+              <div class="field">
+                <label>رابط العنوان (Title URL)</label>
+                <input type="text" id="wh-title-url" placeholder="https://..." oninput="updateWebhookEmbedPreview(); debouncedAutoSave(true)"/>
+              </div>
+            </div>
+
+            <!-- Description -->
+            <div class="field">
+              <label>الوصف الرئيسي (Description - يدعم Markdown ديسكورد)</label>
+              <textarea id="wh-desc" rows="4" placeholder="اكتب محتوى الـ Embed هنا... يمكنك استخدام **عريض** و *مائل* وروابط [هنا](https://example.com)" oninput="updateWebhookEmbedPreview(); debouncedAutoSave(true)" style="background:var(--surface3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:13px;padding:8px 11px;width:100%;outline:none;resize:vertical"></textarea>
+            </div>
+
+            <!-- Color Picker -->
+            <div class="field">
+              <label>لون شريط الـ Embed الجانبي (Embed Color)</label>
+              <div class="color-picker-row">
+                <input type="color" id="wh-color-picker" value="#5865f2" onchange="syncWebhookColor(this.value)" style="width:36px;height:32px;border:none;background:none;cursor:pointer;padding:0;"/>
+                <input type="text" id="wh-color-hex" value="#5865f2" placeholder="#5865f2" maxlength="7" oninput="syncWebhookColorHex(this.value)" style="width:90px;font-family:monospace;"/>
+                <div class="color-swatch" style="background:#5865f2" onclick="setWebhookColor('#5865f2')" title="Blurple"></div>
+                <div class="color-swatch" style="background:#57f287" onclick="setWebhookColor('#57f287')" title="Green"></div>
+                <div class="color-swatch" style="background:#fee75c" onclick="setWebhookColor('#fee75c')" title="Yellow"></div>
+                <div class="color-swatch" style="background:#eb459e" onclick="setWebhookColor('#eb459e')" title="Fuchsia"></div>
+                <div class="color-swatch" style="background:#ed4245" onclick="setWebhookColor('#ed4245')" title="Red"></div>
+                <div class="color-swatch" style="background:#00a8fc" onclick="setWebhookColor('#00a8fc')" title="Cyan"></div>
+                <div class="color-swatch" style="background:#111214" onclick="setWebhookColor('#111214')" title="Dark"></div>
+              </div>
+            </div>
+
+            <!-- Images -->
+            <div class="row2">
+              <div class="field">
+                <label>صورة البانر الكبيرة (Banner URL)</label>
+                <input type="text" id="wh-image-url" placeholder="https://..." oninput="updateWebhookEmbedPreview(); debouncedAutoSave(true)"/>
+              </div>
+              <div class="field">
+                <label>الصورة المصغرة (Thumbnail URL)</label>
+                <input type="text" id="wh-thumb-url" placeholder="https://..." oninput="updateWebhookEmbedPreview(); debouncedAutoSave(true)"/>
+              </div>
+            </div>
+
+            <!-- Dynamic Fields -->
+            <div style="margin-top:10px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+                <label style="font-size:12px;font-weight:700;color:var(--text);">حقول إضافية (Embed Fields):</label>
+                <button type="button" class="btn-sm btn-3d-purple" onclick="addWebhookField()">+ إضافة حقل</button>
+              </div>
+              <div id="wh-fields-list" style="display:flex;flex-direction:column;gap:6px;"></div>
+            </div>
+
+            <!-- Footer & Timestamp -->
+            <div class="row2" style="margin-top:10px;">
+              <div class="field">
+                <label>نص الفوتر (Footer Text)</label>
+                <input type="text" id="wh-footer-text" placeholder="مثال: سنتري كي اس اي • جميع الحقوق محفوظة" oninput="updateWebhookEmbedPreview(); debouncedAutoSave(true)"/>
+              </div>
+              <div class="field">
+                <label>أيقونة الفوتر (Footer Icon URL)</label>
+                <input type="text" id="wh-footer-icon" placeholder="https://..." oninput="updateWebhookEmbedPreview(); debouncedAutoSave(true)"/>
+              </div>
+            </div>
+            <div style="margin-top:6px;">
+              <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text);cursor:pointer;">
+                <input type="checkbox" id="wh-include-timestamp" checked onchange="updateWebhookEmbedPreview(); debouncedAutoSave(true)"/>
+                تضمين التوقيت الحالي للرسالة (Include Timestamp)
+              </label>
+            </div>
+          </div>
+
+          <div id="wh-status-msg" style="display:none;padding:10px 14px;border-radius:8px;font-size:12px;font-weight:600;"></div>
+        </div>
+
+        <!-- RIGHT: LIVE DISCORD PREVIEW -->
+        <div>
+          <div style="position:sticky;top:10px;">
+            <div style="font-size:12px;font-weight:800;color:var(--accent2);margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              معاينة حية لشكل الرسالة في ديسكورد:
+            </div>
+
+            <div class="wh-embed-preview" id="wh-embed-preview">
+              <div class="wh-prev-msg-header">
+                <img class="wh-prev-avatar" id="wh-prev-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Bot"/>
+                <div>
+                  <div class="wh-prev-user">
+                    <span id="wh-prev-username">Naml Webhook</span>
+                    <span class="wh-bot-tag">BOT</span>
+                  </div>
+                  <div class="wh-prev-time" id="wh-prev-time">اليوم الساعة 4:20 م</div>
+                </div>
+              </div>
+
+              <!-- Message Content text -->
+              <div class="wh-prev-text" id="wh-prev-content" style="display:none;"></div>
+
+              <!-- Rich Embed Card -->
+              <div class="wh-embed-card" id="wh-embed-card">
+                <!-- Author -->
+                <div class="wh-embed-author" id="wh-prev-author-wrap" style="display:none;">
+                  <img class="wh-embed-author-img" id="wh-prev-author-img" src="" alt="" style="display:none;"/>
+                  <span id="wh-prev-author-name"></span>
+                </div>
+
+                <!-- Thumbnail (floats right/left) -->
+                <img class="wh-embed-thumb" id="wh-prev-thumb" src="" alt="" style="display:none;"/>
+
+                <!-- Title -->
+                <a class="wh-embed-title" id="wh-prev-title" href="#" target="_blank" style="display:none;"></a>
+
+                <!-- Description -->
+                <div class="wh-embed-desc" id="wh-prev-desc" style="display:none;"></div>
+
+                <!-- Fields -->
+                <div class="wh-embed-fields" id="wh-prev-fields" style="display:none;"></div>
+
+                <!-- Image -->
+                <img class="wh-embed-img" id="wh-prev-image" src="" alt="" style="display:none;"/>
+
+                <!-- Footer -->
+                <div class="wh-embed-footer" id="wh-prev-footer-wrap" style="display:none;">
+                  <img class="wh-embed-footer-img" id="wh-prev-footer-icon" src="" alt="" style="display:none;"/>
+                  <span id="wh-prev-footer-text"></span>
+                  <span id="wh-prev-footer-time" style="margin-right:4px;"></span>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top:10px;text-align:center;">
+              <button class="btn-3d btn-3d-purple" style="width:100%;" onclick="sendDiscordWebhook()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                إرسال الرسالة إلى ديسكورد
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="height:24px;"></div>
+    </div>
+  </div>
+
   <!-- ── TAB: PREVIEW ── -->
   <div class="tab-panel" id="panel-preview">
     <div class="scroll-area" style="align-items:center">
@@ -916,6 +1467,35 @@
         </div>
       </div>
 
+      <!-- Simulation Control Bar -->
+      <div class="sim-bar" id="sim-bar">
+        <div class="sim-bar-top">
+          <div class="sim-info">
+            <div class="sim-status-dot" id="sim-dot"></div>
+            <div>
+              <div class="sim-title">محاكاة المشهد المتحرك (Live Simulation)</div>
+              <div class="sim-sub" id="sim-counter-text">المحاكاة متوقفة — اضغط تشغيل للمعاينة الحية</div>
+            </div>
+          </div>
+          <div class="sim-controls">
+            <button type="button" class="sim-btn" id="btn-sim-prev" onclick="simStepFrame(-1)" title="الفريم السابق">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <button type="button" class="sim-btn sim-btn-play" id="btn-sim-toggle" onclick="toggleRotatorSimulation()" title="تشغيل / إيقاف المعاينة المتحركة">
+              <span id="sim-play-icon">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              </span>
+            </button>
+            <button type="button" class="sim-btn" id="btn-sim-next" onclick="simStepFrame(1)" title="الفريم التالي">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="sim-progress-track">
+          <div class="sim-progress-fill" id="sim-progress-fill"></div>
+        </div>
+      </div>
+
       <!-- Discord-style profile card -->
       <div class="discord-card">
         <div class="dc-banner"></div>
@@ -935,7 +1515,7 @@
             <div class="dc-username" id="pv-username">@yourusername</div>
           </div>
           <div class="dc-divider"></div>
-          <div class="dc-section-label">جاري التشغيل</div>
+          <div class="dc-section-label" id="pv-section-label">جاري التشغيل</div>
           <div class="dc-activity" id="pv-activity">
             <img class="dc-act-img-large" id="pv-large-img" src="" alt=""/>
             <img class="dc-act-img-small" id="pv-small-img" src="" alt=""/>
@@ -1399,6 +1979,15 @@
           </button>
           <input type="file" id="frame-file-small" accept="image/*" style="display:none" onchange="handleFrameFileSelect(event, 'small')"/>
         </div>
+      </div>
+    <!-- Frame Duration -->
+    <div class="row2" style="margin-top:10px;">
+      <div class="field">
+        <label>⏱ مدة بقاء هذا الفريم (بالثواني)</label>
+        <input type="number" id="frame-duration-input" placeholder="مثال: 5" min="2" max="3600" value="5"/>
+      </div>
+      <div class="field" style="display:flex;align-items:flex-end;">
+        <span style="font-size:11px;color:var(--muted);padding-bottom:10px;">توقيت مستقل ومخصص لهذا الفريم فقط (ثانيتين كحد أدنى)</span>
       </div>
     </div>
 

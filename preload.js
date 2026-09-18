@@ -26,7 +26,9 @@ contextBridge.exposeInMainWorld('rpc', {
   onStopped: (cb) => ipcRenderer.on('rpc-stopped', cb),
   onAppHidden: (cb) => ipcRenderer.on('app-hidden', cb),
   onAppShown: (cb) => ipcRenderer.on('app-shown', cb),
-  trimMemory: () => ipcRenderer.invoke('app-trim-memory')
+  trimMemory: () => ipcRenderer.invoke('app-trim-memory'),
+  sendWebhook: (data) => ipcRenderer.invoke('discord-send-webhook', data),
+  getCurrentMedia: () => ipcRenderer.invoke('get-current-media')
 });
 
 
