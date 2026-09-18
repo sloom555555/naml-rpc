@@ -846,32 +846,24 @@
     </div>
 
     <div class="scroll-area">
-      <!-- Client ID -->
+      <!-- ── CARD 1: تطبيق ديسكورد ونوع النشاط ── -->
       <div class="card">
         <div class="card-title">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          معرّف التطبيق
-        </div>
-        <div class="field">
-          <label>Client ID / App ID</label>
-          <div class="input-row">
-            <input type="text" id="clientId" placeholder="1533169274401849414" oninput="debouncedPreview()"/>
-            <button class="btn-link" onclick="window.rpc.openExternal('https://discord.com/developers/applications')" title="فتح Developer Portal">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Activity Type Selector -->
-      <div class="card">
-        <div class="card-title">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          نوع النشاط في ديسكورد (Activity Type)
+          إعدادات التطبيق والنشاط في ديسكورد (Application & Activity)
         </div>
         <div class="row2">
           <div class="field">
-            <label>نوع الحالة</label>
+            <label>معرّف التطبيق (Client ID / App ID)</label>
+            <div class="input-row">
+              <input type="text" id="clientId" placeholder="1533169274401849414" oninput="debouncedPreview()"/>
+              <button type="button" class="btn-link" onclick="window.rpc.openExternal('https://discord.com/developers/applications')" title="فتح بوابة المطورين (Discord Developer Portal)">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="field">
+            <label>نوع الحالة والنشاط (Activity Type)</label>
             <select id="activityType" onchange="onActivityTypeChange(); debouncedPreview(); debouncedAutoSave(true)" style="background:var(--surface3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:13px;padding:8px 11px;width:100%;outline:none">
               <option value="0" selected>🎮 يلعب (Playing)</option>
               <option value="1">🔴 يبث مباشر (Streaming - Twitch/YouTube)</option>
@@ -880,14 +872,14 @@
               <option value="5">🏆 يتنافس في (Competing in)</option>
             </select>
           </div>
-          <div class="field" id="stream-url-field" style="display:none;">
-            <label>رابط البث (Twitch أو YouTube Live)</label>
-            <input type="text" id="streamUrl" placeholder="https://twitch.tv/..." oninput="debouncedPreview(); debouncedAutoSave(true)"/>
-          </div>
+        </div>
+        <div class="field" id="stream-url-field" style="display:none;margin-top:8px;">
+          <label>رابط البث المباشر (Twitch أو YouTube Live)</label>
+          <input type="text" id="streamUrl" placeholder="https://twitch.tv/..." oninput="debouncedPreview(); debouncedAutoSave(true)"/>
         </div>
       </div>
 
-      <!-- Spotify Track & Synced Lyrics Card -->
+      <!-- ── CARD 2: سحب أغنية وكلمات سبوتيفاي تلقائياً ── -->
       <div class="spotify-track-card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
           <div style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:800;color:#22c55e;">
@@ -933,11 +925,11 @@
         </div>
       </div>
 
-      <!-- Details & State -->
+      <!-- ── CARD 3: النصوص والحالة ── -->
       <div class="card">
         <div class="card-title">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-          النص
+          النصوص وحالة الـ RPC (Details & State)
         </div>
         <div class="row2">
           <div class="field">
@@ -953,37 +945,54 @@
         </div>
       </div>
 
-      <!-- Images -->
+      <!-- ── CARD 4: الصور والأيقونات ── -->
       <div class="card">
         <div class="card-title">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-          الصور
+          الصور والأيقونات (Visual Assets & Quick Chips)
         </div>
-        <!-- Large -->
-        <div class="field">
-          <label>الصورة الكبيرة</label>
-          <div class="img-row">
-            <img class="img-thumb" id="large-thumb" src="" alt=""/>
-            <input type="text" id="largeImageKey" placeholder="رابط أو مفتاح..." oninput="onImageKeyInput('large')"/>
-            <button class="btn-upload" onclick="document.getElementById('large-file').click()" title="رفع من جهازك">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            </button>
-            <input type="file" id="large-file" accept="image/*" style="display:none" onchange="handleFileUpload(event,'large')"/>
+        <div class="row2">
+          <!-- Large -->
+          <div class="field">
+            <label>الصورة الكبيرة (Large Image)</label>
+            <div class="img-row">
+              <img class="img-thumb" id="large-thumb" src="" alt=""/>
+              <input type="text" id="largeImageKey" placeholder="رابط أو مفتاح الصورة..." oninput="onImageKeyInput('large')"/>
+              <button type="button" class="btn-upload" onclick="document.getElementById('large-file').click()" title="رفع صورة من جهازك">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              </button>
+              <input type="file" id="large-file" accept="image/*" style="display:none" onchange="handleFileUpload(event,'large')"/>
+            </div>
+            <input type="text" id="largeImageText" placeholder="نص تلميح الصورة الكبيرة..." style="margin-top:6px" oninput="debouncedPreview()"/>
           </div>
-          <input type="text" id="largeImageText" placeholder="نص الصورة الكبيرة..." style="margin-top:6px" oninput="debouncedPreview()"/>
+          <!-- Small -->
+          <div class="field">
+            <label>الصورة الصغيرة (Small Icon)</label>
+            <div class="img-row">
+              <img class="img-thumb" id="small-thumb" src="" alt=""/>
+              <input type="text" id="smallImageKey" placeholder="رابط أو مفتاح الصورة..." oninput="onImageKeyInput('small')"/>
+              <button type="button" class="btn-upload" onclick="document.getElementById('small-file').click()" title="رفع صورة من جهازك">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              </button>
+              <input type="file" id="small-file" accept="image/*" style="display:none" onchange="handleFileUpload(event,'small')"/>
+            </div>
+            <input type="text" id="smallImageText" placeholder="نص تلميح الصورة الصغيرة..." style="margin-top:6px" oninput="debouncedPreview()"/>
+          </div>
         </div>
-        <!-- Small -->
-        <div class="field" style="margin-top:10px">
-          <label>الصورة الصغيرة</label>
-          <div class="img-row">
-            <img class="img-thumb" id="small-thumb" src="" alt=""/>
-            <input type="text" id="smallImageKey" placeholder="رابط أو مفتاح..." oninput="onImageKeyInput('small')"/>
-            <button class="btn-upload" onclick="document.getElementById('small-file').click()" title="رفع من جهازك">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            </button>
-            <input type="file" id="small-file" accept="image/*" style="display:none" onchange="handleFileUpload(event,'small')"/>
+
+        <!-- Quick Icon Presets -->
+        <div style="margin-top:10px;">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:600;">أيقونات جاهزة بنقرة واحدة (بدون كتابة):</div>
+          <div class="quick-icon-chips" style="display:flex;flex-wrap:wrap;gap:6px;">
+            <button type="button" class="icon-chip" onclick="selectQuickRpcIcon('large', 'https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png')">Discord</button>
+            <button type="button" class="icon-chip" onclick="selectQuickRpcIcon('large', 'https://cdn-icons-png.flaticon.com/512/5968/5968819.png')">Twitch</button>
+            <button type="button" class="icon-chip" onclick="selectQuickRpcIcon('large', 'https://cdn-icons-png.flaticon.com/512/1384/1384060.png')">YouTube</button>
+            <button type="button" class="icon-chip" onclick="selectQuickRpcIcon('large', 'https://cdn-icons-png.flaticon.com/512/174/174872.png')">Spotify</button>
+            <button type="button" class="icon-chip" onclick="selectQuickRpcIcon('large', 'https://cdn-icons-png.flaticon.com/512/906/906324.png')">VS Code</button>
+            <button type="button" class="icon-chip" onclick="selectQuickRpcIcon('large', 'https://cdn-icons-png.flaticon.com/512/686/686589.png')">Gaming 🎮</button>
+            <button type="button" class="icon-chip" onclick="selectQuickRpcIcon('large', 'https://cdn-icons-png.flaticon.com/512/785/785116.png')">Fire 🔥</button>
+            <button type="button" class="icon-chip" onclick="selectQuickRpcIcon('large', 'https://cdn-icons-png.flaticon.com/512/1828/1828884.png')">Star ⭐</button>
           </div>
-          <input type="text" id="smallImageText" placeholder="نص الصورة الصغيرة..." style="margin-top:6px" oninput="debouncedPreview()"/>
         </div>
       </div>
 
@@ -1383,7 +1392,6 @@
         <div style="height:16px"></div>
       </div>
     </div>
-  </div>
   </div>
 
   <!-- ── TAB: WEBHOOK ── -->
@@ -1870,24 +1878,16 @@
       </div>
     </div>
     <div style="display:flex;flex-direction:column;gap:14px;padding:0 2px 20px">
-      <div class="card" style="text-align:center;padding:28px 20px;">
-        <img src="assets/naml-logo.png" style="width:90px;height:90px;object-fit:contain;margin-bottom:12px;" alt="نامل"/>
-        <div style="font-size:28px;font-weight:900;background:linear-gradient(135deg,#06b6d4,#10b981);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px;">نامل</div>
-        <div style="font-size:12px;color:var(--muted);margin-bottom:4px;">الإصدار 3.0.0</div>
-        <div style="font-size:12px;color:var(--muted);">منصة متكاملة للتحكم في Discord Rich Presence وإدارة بوتات ديسكورد</div>
-      </div>
-      <div class="card">
-        <div class="card-title">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          معلومات التطبيق
+      <!-- ── TAB: ABOUT ── -->
+      <div class="card" style="text-align:center;padding:26px 20px;background:linear-gradient(135deg,rgba(15,20,32,0.9),rgba(22,28,46,0.95));border:1px solid rgba(99,102,241,0.25);">
+        <img src="assets/naml-logo.png" style="width:84px;height:84px;object-fit:contain;margin-bottom:10px;" alt="نامل"/>
+        <div style="font-size:26px;font-weight:900;background:linear-gradient(135deg,#06b6d4,#10b981);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px;">نامل — Naml</div>
+        <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(34,197,94,0.15);color:#22c55e;padding:3px 12px;border-radius:12px;font-size:11px;font-weight:800;margin-bottom:8px;">
+          الإصدار 3.0.0 المستقر ⚡
         </div>
-        <table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:8px;">
-          <tr><td style="color:var(--muted);padding:5px 0;width:100px;">الاسم:</td><td style="font-weight:600;">نامل (Naml)</td></tr>
-          <tr><td style="color:var(--muted);padding:5px 0;">الإصدار:</td><td style="font-weight:600;">3.0.0</td></tr>
-          <tr><td style="color:var(--muted);padding:5px 0;">الترخيص:</td><td style="font-weight:600;">مغلق المصدر — جميع الحقوق محفوظة لـ QZV سنتري كي اس اي</td></tr>
-          <tr><td style="color:var(--muted);padding:5px 0;">التقنيات:</td><td style="font-weight:600;">Electron.js · Node.js · Discord API</td></tr>
-          <tr><td style="color:var(--muted);padding:5px 0;">الأمان:</td><td style="font-weight:600;">تشفير محلي 100% — بلا خوادم خارجية</td></tr>
-        </table>
+        <div style="font-size:12px;color:var(--muted);max-width:440px;margin:0 auto;line-height:1.6;">
+          منصة متكاملة واحترافية للتحكم في Discord Rich Presence والمشاهد المتحركة وإدارة بوتات ديسكورد بأعلى كفاءة وأقل استهلاك للموارد.
+        </div>
       </div>
 
       <!-- Updates & Changelog Card -->
@@ -1900,12 +1900,12 @@
           <span style="background:rgba(34,197,94,0.15);color:var(--green);padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;">v3.0.0</span>
         </div>
 
-        <div style="display:flex;align-items:center;justify-content:space-between;margin:10px 0 14px;background:var(--surface2);padding:10px 14px;border-radius:8px;border:1px solid var(--border);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin:10px 0 14px;background:var(--surface3);padding:10px 14px;border-radius:8px;border:1px solid var(--border);">
           <div>
             <div style="font-weight:700;font-size:12px;" id="update-status-title">أنت تستخدم أحدث إصدار مستقر (v3.0.0)</div>
-            <div style="font-size:11px;color:var(--muted);" id="update-status-sub">محرك رام فائق الخفة، تصغير لشريط المهام، والـ RPC المتحرك 2.0</div>
+            <div style="font-size:11px;color:var(--muted);" id="update-status-sub">محرك سبوتيفاي الذكي، استيراد كلمات الـ AI، وخفض استهلاك الرام 70%</div>
           </div>
-          <button id="btn-check-updates" onclick="handleCheckUpdates()" style="display:flex;align-items:center;gap:5px;padding:6px 12px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;">
+          <button type="button" id="btn-check-updates" onclick="handleCheckUpdates()" class="btn-3d btn-3d-blue" style="font-size:11px;padding:6px 12px;">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
             <span>فحص التحديثات</span>
           </button>
@@ -1913,76 +1913,64 @@
 
         <div style="font-weight:700;font-size:12px;margin-bottom:8px;color:var(--text);">ما تم إضافته في هذا التحديث (v3.0.0):</div>
         <div class="changelog-list" style="display:flex;flex-direction:column;gap:8px;" id="changelog-container">
-          <div style="background:var(--surface);border:1px solid var(--border);border-right:3px solid var(--green);border-radius:6px;padding:8px 12px;">
-            <div style="font-weight:700;font-size:12px;color:var(--green);margin-bottom:2px;">⚡ تقليص استهلاك الرام وتفريغ تلقائي في الخلفية</div>
-            <div style="font-size:11px;color:var(--muted);">تحسين استهلاك الذاكرة وتخفيضها بنسبة تفوق 70% عند التصغير لشريط المهام عبر تنظيف دوري للذاكرة العشوائية.</div>
+          <div style="background:var(--surface3);border:1px solid var(--border);border-right:3px solid #10b981;border-radius:6px;padding:8px 12px;">
+            <div style="font-weight:700;font-size:12px;color:#10b981;margin-bottom:2px;">🎵 محرك سبوتيفاي وسحب الكلمات المتزامنة تلقائياً</div>
+            <div style="font-size:11px;color:var(--muted);">ضع رابط أي أغنية من Spotify لجلب الغلاف والكلمات المتزامنة وترتيبها في فريمات الـ RPC بضغطة زر.</div>
           </div>
-          <div style="background:var(--surface);border:1px solid var(--border);border-right:3px solid var(--accent);border-radius:6px;padding:8px 12px;">
-            <div style="font-weight:700;font-size:12px;color:var(--accent);margin-bottom:2px;">🗔 إغلاق التطبيق إلى شريط المهام (Tray) تلقائياً</div>
-            <div style="font-size:11px;color:var(--muted);">زر الإغلاق (X) يقوم بالتصغير لشريط المهام فوراً بدلاً من الإنهاء مع زر تنظيف الرام الفوري من أيقونة الساعة.</div>
+          <div style="background:var(--surface3);border:1px solid var(--border);border-right:3px solid var(--accent);border-radius:6px;padding:8px 12px;">
+            <div style="font-weight:700;font-size:12px;color:var(--accent);margin-bottom:2px;">🤖 صانع الفريمات واستيراد كلمات الـ AI وملفات LRC</div>
+            <div style="font-size:11px;color:var(--muted);">زر نسخ برومبت جاهز لـ ChatGPT و Gemini لتجهيز الكلمات مقسمة بالأوقات، مع إمكانية تعيين صورة موحدة لجميع الفريمات بنقرة واحدة.</div>
           </div>
-          <div style="background:var(--surface);border:1px solid var(--border);border-right:3px solid var(--purple);border-radius:6px;padding:8px 12px;">
-            <div style="font-weight:700;font-size:12px;color:var(--purple);margin-bottom:2px;">🔄 محرك الـ RPC المتحرك المتطور (Rotator 2.0)</div>
-            <div style="font-size:11px;color:var(--muted);">رفع الصور مباشرة من جهازك لكل فريم، ترتيب وتكرار الفريمات، سيناريوهات جاهزة، ومراقبة مواصفات الجهاز الحية (RAM/CPU).</div>
+          <div style="background:var(--surface3);border:1px solid var(--border);border-right:3px solid var(--green);border-radius:6px;padding:8px 12px;">
+            <div style="font-weight:700;font-size:12px;color:var(--green);margin-bottom:2px;">⚡ تقليص استهلاك الرام بنسبة تتجاوز 70%</div>
+            <div style="font-size:11px;color:var(--muted);">محرك ذكي لتفريغ الذاكرة وتنظيف الرام تلقائياً عند التصغير لشريط المهام (Tray).</div>
           </div>
-          <div style="background:var(--surface);border:1px solid var(--border);border-right:3px solid var(--yellow);border-radius:6px;padding:8px 12px;">
-            <div style="font-weight:700;font-size:12px;color:var(--yellow);margin-bottom:2px;">✨ مركز فحص التحديثات وسجل التغييرات</div>
-            <div style="font-size:11px;color:var(--muted);">واجهة فورية لمعرفة ما الجديد في كل إصدار وإمكانية التحقق الآمن من وجود إصدارات أحدث.</div>
+          <div style="background:var(--surface3);border:1px solid var(--border);border-right:3px solid var(--purple);border-radius:6px;padding:8px 12px;">
+            <div style="font-weight:700;font-size:12px;color:var(--purple);margin-bottom:2px;">🗔 الإغلاق السلس إلى شريط المهام (Minimize to Tray)</div>
+            <div style="font-size:11px;color:var(--muted);">زر الإغلاق (X) يقوم بالتصغير السريع للأيقونة بجانب الساعة دون مقاطعة الـ RPC النشط.</div>
           </div>
         </div>
       </div>
+
+      <!-- Developer & Community Card -->
       <div class="card">
         <div class="card-title">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
-          الدعم الفني والمجتمع
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+          المبرمج والترخيص والمجتمع
         </div>
-        <p style="font-size:12px;color:var(--muted);margin:8px 0 12px;">للحصول على المساعدة أو التبليغ عن مشاكل:</p>
-        <button class="btn-accent" onclick="window.rpc.openExternal('https://discord.gg/PCu6fdXRGg')" style="width:100%;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-left:6px;"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
-          سيرفر الدعم الرسمي
-        </button>
-      </div>
-      <div style="text-align:center;font-size:11px;color:var(--muted);padding:4px;">
-        جميع الحقوق محفوظة لـ QZV سنتري كي اس اي.
+        <div class="about-info-grid">
+          <div class="info-item">
+            <span class="info-lbl">المطور:</span>
+            <span class="info-val">QZV سنتري كي اس اي</span>
+          </div>
+          <div class="info-item">
+            <span class="info-lbl">الترخيص:</span>
+            <span class="info-val">جميع الحقوق محفوظة لـ QZV سنتري كي اس اي</span>
+          </div>
+          <div class="info-item">
+            <span class="info-lbl">التقنيات:</span>
+            <span class="info-val">Electron, Node.js, WebSockets</span>
+          </div>
+          <div class="info-item">
+            <span class="info-lbl">الأمان:</span>
+            <span class="info-val">تشفير محلي 100% بدون خوادم خارجية</span>
+          </div>
+        </div>
+
+        <div style="margin-top:14px;background:var(--surface3);border:1px solid var(--border);border-radius:8px;padding:12px;">
+          <div style="font-size:12px;font-weight:700;margin-bottom:4px;color:var(--text);">💬 سيرفر الدعم الرسمي والمجتمع:</div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">انضم إلى سيرفر الديسكورد الرسمي للحصول على التحديثات، الدعم الفني، والمشاركة في تطوير المشروع:</div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="text" readonly value="https://discord.gg/PCu6fdXRGg" style="flex:1;font-family:monospace;font-size:11px;background:var(--surface2);color:var(--accent2);direction:ltr;text-align:left;border:1px solid var(--border);border-radius:6px;padding:6px 10px;"/>
+            <button type="button" class="btn-3d btn-3d-purple" style="padding:6px 14px;font-size:11px;white-space:nowrap;" onclick="window.rpc.openExternal('https://discord.gg/PCu6fdXRGg')">
+              الانضمام لسيرفر ديسكورد 🚀
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </div>
-        <p style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:12px" data-i18n="about_server_desc">
-          انضم إلى سيرفر الديسكورد الرسمي للحصول على التحديثات، الدعم الفني، والمشاركة في تطوير المشروع:
-        </p>
-        <div class="discord-join-box">
-          <div class="discord-link-text">https://discord.gg/PCu6fdXRGg</div>
-          <button class="btn-3d btn-3d-purple" style="width:100%" onclick="window.rpc.openExternal('https://discord.gg/PCu6fdXRGg')">
-            <span data-i18n="btn_join_discord"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path></svg> الانضمام لسيرفر ديسكورد</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Developer & Credits -->
-      <div class="card">
-        <div class="card-title" data-i18n="about_dev_title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> المبرمج والمشروع</div>
-        <div class="about-info-grid">
-          <div class="info-item">
-            <span class="info-lbl" data-i18n="lbl_developer">المطور:</span>
-            <span class="info-val">QZV سنتري كي اس اي</span>
-          </div>
-          <div class="info-item">
-            <span class="info-lbl" data-i18n="lbl_license">الترخيص:</span>
-            <span class="info-val">جميع الحقوق محفوظة لـ QZV سنتري كي اس اي</span>
-          </div>
-          <div class="info-item">
-            <span class="info-lbl" data-i18n="lbl_framework">التقنيات:</span>
-            <span class="info-val">Electron, Node.js, WebSockets</span>
-          </div>
-          <div class="info-item">
-            <span class="info-lbl" data-i18n="lbl_security">الأمان:</span>
-            <span class="info-val" data-i18n="val_security">تشفير محلي 100% بدون خوادم خارجية</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
 </div><!-- #content -->
 

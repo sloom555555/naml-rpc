@@ -1303,11 +1303,28 @@ function onImageKeyInput(which) {
   debouncedAutoSave(false);
 }
 
+function selectQuickRpcIcon(which, url) {
+  const id = which === 'small' ? 'smallImageKey' : 'largeImageKey';
+  const input = document.getElementById(id);
+  if (input) {
+    input.value = url;
+    onImageKeyInput(which);
+    debouncedPreview();
+    debouncedAutoSave(true);
+    toast(`✨ تم تعيين أيقونة ${which === 'large' ? 'الصورة الكبيرة' : 'الصورة الصغيرة'} بنجاح`, 'success');
+  }
+}
+
 function updateThumb(which, url) {
   const id  = which === 'large' ? 'large-thumb' : 'small-thumb';
   const img = document.getElementById(id);
-  if (url?.startsWith('http')) { img.src = url; img.classList.add('show'); }
-  else { img.classList.remove('show'); img.src = ''; }
+  if (url && (url.startsWith('http') || url.startsWith('data:image'))) {
+    img.src = url;
+    img.classList.add('show');
+  } else {
+    img.classList.remove('show');
+    img.src = '';
+  }
 }
 
 // ══════════════════════════════════════════
