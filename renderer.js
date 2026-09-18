@@ -1,0 +1,1698 @@
+// ══════════════════════════════════════════
+//  SentryRPC — Renderer
+// ══════════════════════════════════════════
+
+// ── State ──
+let isRpcActive = false;
+let elapsedStart = null;
+let elapsedInterval = null;
+let profiles = [];
+let bots = [];
+let cropTarget = null; // 'large' | 'small'
+let cropSrc    = null;
+let previewDebounce = null;
+
+const QUICK_PRESETS = [
+  { emoji:'<span class="status-dot" style="background:var(--color-error, #ef4444); display:inline-block; margin-left:4px;"></span>', name:'بث تويتش',     sub:'Streaming',        details:'Streaming on Twitch',  state:'<span class="status-dot" style="background:var(--color-error, #ef4444); display:inline-block; margin-left:4px;"></span> Live Now',     largeImageKey:'twitch',    button1Label:'Watch Stream', button1Url:'https://twitch.tv' },
+  { emoji:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>', name:'VS Code',       sub:'Coding',           details:'Editing Code',          state:'Workspace: Main',  largeImageKey:'vscode' },
+  { emoji:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>', name:'سبوتيفاي',      sub:'Listening',        details:'Listening to Spotify',  state:'The Weeknd',       largeImageKey:'spotify',   button1Label:'Spotify', button1Url:'https://spotify.com' },
+  { emoji:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><rect x="2" y="6" width="20" height="12" rx="2"></rect><line x1="6" y1="12" x2="10" y2="12"></line><line x1="8" y1="10" x2="8" y2="14"></line><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>', name:'GTA V',         sub:'Gaming',           details:'Grand Theft Auto V',    state:'FiveM — City RP',  largeImageKey:'gtav' },
+  { emoji:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path></svg>', name:'فوتوشوب',       sub:'Designing',        details:'Adobe Photoshop 2025',  state:'Editing Logo.psd', largeImageKey:'photoshop' },
+  { emoji:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>', name:'ديسكورد',       sub:'Chatting',         details:'SentryKSA Community',   state:'في الروم الصوتي',  largeImageKey:'discord',   partySize:1, partyMax:10 },
+  { emoji:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect><polyline points="17 2 12 7 7 2"></polyline></svg>', name:'يوتيوب',        sub:'Watching',         details:'Watching YouTube',       state:'SentryKSA Channel',largeImageKey:'youtube',   button1Label:'Watch', button1Url:'https://youtube.com' },
+  { emoji:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg>', name:'استراحة',       sub:'Chilling',         details:'Taking a break',         state:'عند القهوة <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg>',   largeImageKey:'' },
+];
+
+// ══════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', async () => {
+  buildQuickPresets();
+  const [cfg, profs, botsData] = await Promise.all([
+    window.rpc.loadConfig(),
+    window.rpc.loadProfiles(),
+    window.rpc.loadBots(),
+  ]);
+  applyConfigToForm(cfg);
+  profiles = profs || [];
+  bots     = botsData || [];
+  renderProfiles();
+  renderBots();
+  updatePreview();
+  await loadCurrentSettings();
+
+  const st = await window.rpc.status();
+  if (st.active) setRpcState(true);
+
+  window.rpc.onStopped(() => setRpcState(false));
+
+  if (window.rpc?.onDownloadProgress) {
+    window.rpc.onDownloadProgress((data) => {
+      const box = document.getElementById('download-progress-box');
+      const bar = document.getElementById('download-bar');
+      const fn = document.getElementById('download-filename');
+      const pct = document.getElementById('download-percent');
+      if (box) box.style.display = 'block';
+      if (bar) bar.style.width = `${data.percent}%`;
+      if (pct) pct.textContent = `${data.percent}%`;
+      if (fn) fn.textContent = `جاري تحميل ${data.fileName}... (${Math.round(data.received/1024)} KB)`;
+    });
+  }
+
+  handleQuickDiscordCheck();
+  setInterval(handleQuickDiscordCheck, 15000);
+
+  if (window.rpc?.onDiscordUserChanged) {
+    window.rpc.onDiscordUserChanged((user) => {
+      updateDiscordProfileUI(user);
+      toast(`🔄 تم التعرف على حساب ديسكورد: ${user.global_name || user.username}`, 'info');
+    });
+  }
+  handleRefreshDiscordUser(true);
+
+  // Char counters
+  ['details','state'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', () => updateCharCount(id));
+  });
+
+  // Auto-Save: attach to all inputs in RPC tab & rotator
+  const rpcPanel = document.getElementById('panel-rpc');
+  if (rpcPanel) {
+    rpcPanel.querySelectorAll('input, textarea, select').forEach(el => {
+      el.addEventListener('input', () => debouncedAutoSave(false));
+      el.addEventListener('change', () => debouncedAutoSave(true));
+    });
+  }
+
+  // Auto-Save flush on window closing / unloading
+  window.addEventListener('beforeunload', () => {
+    try {
+      const cfg = collectConfig();
+      window.rpc.saveConfig(cfg);
+    } catch (e) {}
+  });
+  window.addEventListener('pagehide', () => {
+    try {
+      const cfg = collectConfig();
+      window.rpc.saveConfig(cfg);
+    } catch (e) {}
+  });
+});
+
+// ══════════════════════════════════════════
+//  TABS
+// ══════════════════════════════════════════
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelector(`.tab[data-tab="${name}"]`).classList.add('active');
+  document.getElementById(`panel-${name}`).classList.add('active');
+  if (name === 'preview') {
+    updatePreview();
+    handleRefreshDiscordUser(true);
+  }
+}
+
+// ══════════════════════════════════════════
+//  CONFIG
+// ══════════════════════════════════════════
+let rotatorFramesList = [];
+
+function collectConfig() {
+  return {
+    clientId:             v('clientId') || '1533169274401849414',
+    details:              v('details'),
+    state:                v('state'),
+    largeImageKey:        v('largeImageKey'),
+    largeImageText:       v('largeImageText'),
+    smallImageKey:        v('smallImageKey'),
+    smallImageText:       v('smallImageText'),
+    
+    partyId:              v('partyId'),
+    partySize:            parseInt(v('partySize')) || 0,
+    partyMax:             parseInt(v('partyMax'))  || 0,
+    
+    startTimestamp:       document.getElementById('startTimestamp').checked,
+    endTimestamp:         parseInt(v('endTimestamp')) || 0,
+    instance:             document.getElementById('instance').checked,
+    
+    matchSecret:          v('matchSecret'),
+    joinSecret:           v('joinSecret'),
+    spectateSecret:       v('spectateSecret'),
+
+    button1Label:         v('button1Label'),
+    button1Url:           v('button1Url'),
+    button2Label:         v('button2Label'),
+    button2Url:           v('button2Url'),
+
+    rotationEnabled:      document.getElementById('rotationEnabled')?.checked || false,
+    enableSystemMetrics:  document.getElementById('enableSystemMetrics')?.checked || false,
+    rotationInterval:     parseInt(document.getElementById('rotationInterval')?.value) || 5,
+    rotationFrames:       rotatorFramesList
+  };
+}
+
+function applyConfigToForm(cfg) {
+  const fields = ['clientId','details','state','largeImageKey','largeImageText','smallImageKey','smallImageText','button1Label','button1Url','button2Label','button2Url','partyId','matchSecret','joinSecret','spectateSecret'];
+  fields.forEach(f => { const el = document.getElementById(f); if (el) el.value = cfg[f] || ''; });
+  
+  if (cfg.partySize) document.getElementById('partySize').value = cfg.partySize;
+  if (cfg.partyMax)  document.getElementById('partyMax').value  = cfg.partyMax;
+  if (cfg.endTimestamp) document.getElementById('endTimestamp').value = cfg.endTimestamp;
+  
+  document.getElementById('startTimestamp').checked = cfg.startTimestamp !== false;
+  document.getElementById('instance').checked = cfg.instance === true;
+  
+  if (document.getElementById('rotationEnabled')) {
+    document.getElementById('rotationEnabled').checked = !!cfg.rotationEnabled;
+  }
+  if (document.getElementById('enableSystemMetrics')) {
+    document.getElementById('enableSystemMetrics').checked = !!cfg.enableSystemMetrics;
+  }
+  if (document.getElementById('rotationInterval') && cfg.rotationInterval) {
+    document.getElementById('rotationInterval').value = cfg.rotationInterval;
+  }
+
+  rotatorFramesList = Array.isArray(cfg.rotationFrames) ? cfg.rotationFrames : [];
+  toggleRotatorUI();
+  renderRotatorFrames();
+
+  updateThumb('large', cfg.largeImageKey);
+  updateThumb('small', cfg.smallImageKey);
+  ['details','state'].forEach(id => updateCharCount(id));
+}
+
+let autoSaveTimer = null;
+
+function showAutoSaveStatus(state) {
+  const el = document.getElementById('autosave-indicator');
+  if (!el) return;
+  if (state === 'saving') {
+    el.className = 'autosave-indicator saving';
+    el.innerHTML = '<span class="save-spinner"></span> <span class="save-text">جاري الحفظ...</span>';
+    el.style.opacity = '1';
+  } else if (state === 'saved') {
+    el.className = 'autosave-indicator saved';
+    el.innerHTML = '<span class="save-check">✓</span> <span class="save-text">محفوظ تلقائياً</span>';
+    el.style.opacity = '1';
+  } else if (state === 'error') {
+    el.className = 'autosave-indicator error';
+    el.innerHTML = '<span class="save-check">⚠️</span> <span class="save-text">خطأ بالحفظ</span>';
+    el.style.opacity = '1';
+  }
+}
+
+function debouncedAutoSave(immediate = false) {
+  if (autoSaveTimer) {
+    clearTimeout(autoSaveTimer);
+    autoSaveTimer = null;
+  }
+
+  showAutoSaveStatus('saving');
+
+  const executeSave = async () => {
+    try {
+      const cfg = collectConfig();
+      await window.rpc.saveConfig(cfg);
+      showAutoSaveStatus('saved');
+    } catch (err) {
+      console.error('AutoSave failed:', err);
+      showAutoSaveStatus('error');
+    }
+  };
+
+  if (immediate) {
+    executeSave();
+  } else {
+    autoSaveTimer = setTimeout(executeSave, 300);
+  }
+}
+
+async function handleSaveConfig() {
+  debouncedAutoSave(true);
+  toast('✅ تم حفظ الإعدادات', 'success');
+}
+
+// ══════════════════════════════════════════
+//  RPC START / STOP
+// ══════════════════════════════════════════
+async function handleStart() {
+  const cfg = collectConfig();
+  const startBtn = document.getElementById('btn-start');
+  startBtn.disabled = true;
+  startBtn.innerHTML = '<span class="spinner"></span> جاري الاتصال...';
+
+  const res = await window.rpc.start(cfg);
+  startBtn.disabled = false;
+  startBtn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg> تشغيل';
+
+  if (res?.success) {
+    setRpcState(true);
+    toast('<span class="status-dot" style="background:var(--color-success, #22c55e); display:inline-block; margin-left:4px;"></span> الـ RPC يعمل! افتح ديسكورد وشوف ملفك الشخصي', 'success');
+  } else {
+    toast('❌ ' + (res?.error || 'فشل الاتصال. تأكد أن ديسكورد يعمل.'), 'error');
+  }
+}
+
+async function handleStop() {
+  await window.rpc.stop();
+  setRpcState(false);
+  toast('تم إيقاف الـ RPC', 'info');
+}
+
+function setRpcState(active) {
+  isRpcActive = active;
+  document.getElementById('btn-start').style.display = active ? 'none' : '';
+  document.getElementById('btn-stop').style.display  = active ? '' : 'none';
+
+  const badge = document.getElementById('tl-status');
+  const txt   = document.getElementById('tl-status-text');
+  badge.className = 'tl-status ' + (active ? 'on' : 'off');
+  txt.innerHTML = active ? 'نشط' : 'غير نشط';
+
+  const elapsed = document.getElementById('tl-elapsed');
+  if (active) {
+    elapsedStart = Date.now();
+    elapsed.style.display = '';
+    elapsedInterval = setInterval(updateElapsed, 1000);
+  } else {
+    elapsed.style.display = 'none';
+    clearInterval(elapsedInterval);
+  }
+}
+
+function updateElapsed() {
+  if (!elapsedStart) return;
+  const s = Math.floor((Date.now() - elapsedStart) / 1000);
+  const m = Math.floor(s / 60);
+  const h = Math.floor(m / 60);
+  const txt = h > 0 ? `${h}:${pad(m%60)}:${pad(s%60)}` : `${m}:${pad(s%60)}`;
+  document.getElementById('elapsed-text').textContent = txt;
+}
+const pad = n => String(n).padStart(2, '0');
+
+// ══════════════════════════════════════════
+//  QUICK PRESETS
+// ══════════════════════════════════════════
+function buildQuickPresets() {
+  const grid = document.getElementById('quick-presets');
+  QUICK_PRESETS.forEach(p => {
+    const btn = document.createElement('button');
+    btn.className = 'preset-btn';
+    btn.innerHTML = `<span class="preset-emoji">${p.emoji}</span><div class="preset-info"><div class="preset-name">${p.name}</div><div class="preset-sub">${p.sub}</div></div>`;
+    btn.onclick = () => applyPreset(p);
+    grid.appendChild(btn);
+  });
+}
+
+function applyPreset(p) {
+  const map = {details:'',state:'',largeImageKey:'',largeImageText:'',smallImageKey:'',smallImageText:'',button1Label:'',button1Url:'',button2Label:'',button2Url:'',partySize:'',partyMax:''};
+  Object.keys(map).forEach(k => {
+    const el = document.getElementById(k);
+    if (el) el.value = p[k] !== undefined ? p[k] : '';
+  });
+  updateThumb('large', p.largeImageKey || '');
+  updateThumb('small', p.smallImageKey || '');
+  debouncedPreview();
+  debouncedAutoSave(true);
+  toast(`تم تطبيق: ${p.emoji} ${p.name}`, 'info');
+}
+
+// ══════════════════════════════════════════
+//  PROFILES
+// ══════════════════════════════════════════
+function renderProfiles() {
+  const list  = document.getElementById('profiles-list');
+  const empty = document.getElementById('profiles-empty');
+  list.innerHTML = '';
+  if (profiles.length === 0) { empty.style.display = ''; return; }
+  empty.style.display = 'none';
+  profiles.forEach((p, i) => {
+    const card = document.createElement('div');
+    card.className = 'item-card';
+    card.innerHTML = `
+      <div class="item-icon">${p.emoji || '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><rect x="2" y="6" width="20" height="12" rx="2"></rect><line x1="6" y1="12" x2="10" y2="12"></line><line x1="8" y1="10" x2="8" y2="14"></line><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>'}</div>
+      <div class="item-info">
+        <div class="item-name">${esc(p.name)}</div>
+        <div class="item-sub">${esc(p.details || '—')} · ${esc(p.state || '—')}</div>
+      </div>
+      <div class="item-actions">
+        <button class="btn-sm" title="تحميل" onclick="loadProfile(${i})">▶</button>
+        <button class="btn-sm danger" title="حذف" onclick="deleteProfile(${i})">✕</button>
+      </div>`;
+    list.appendChild(card);
+  });
+}
+
+function openSaveProfileModal() {
+  document.getElementById('profile-name-input').value = '';
+  document.getElementById('profile-emoji-input').value = '';
+  showModal('modal-save-profile');
+  setTimeout(() => document.getElementById('profile-name-input').focus(), 100);
+}
+
+async function confirmSaveProfile() {
+  const name  = document.getElementById('profile-name-input').value.trim();
+  const emoji = document.getElementById('profile-emoji-input').value.trim() || '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><rect x="2" y="6" width="20" height="12" rx="2"></rect><line x1="6" y1="12" x2="10" y2="12"></line><line x1="8" y1="10" x2="8" y2="14"></line><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>';
+  if (!name) { toast('أدخل اسم للبروفايل', 'error'); return; }
+  const cfg = collectConfig();
+  profiles.push({ name, emoji, ...cfg, savedAt: Date.now() });
+  await window.rpc.saveProfiles(profiles);
+  renderProfiles();
+  debouncedAutoSave(true);
+  closeModal('modal-save-profile');
+  toast(`✅ تم حفظ البروفايل: ${emoji} ${name}`, 'success');
+}
+
+function loadProfile(i) {
+  const p = profiles[i];
+  if (!p) return;
+  applyConfigToForm(p);
+  switchTab('rpc');
+  debouncedPreview();
+  debouncedAutoSave(true);
+  toast(`تم تحميل: ${p.emoji || '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><rect x="2" y="6" width="20" height="12" rx="2"></rect><line x1="6" y1="12" x2="10" y2="12"></line><line x1="8" y1="10" x2="8" y2="14"></line><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>'} ${p.name}`, 'info');
+}
+
+async function deleteProfile(i) {
+  profiles.splice(i, 1);
+  await window.rpc.saveProfiles(profiles);
+  renderProfiles();
+  toast('تم حذف البروفايل', 'info');
+}
+
+// ══════════════════════════════════════════
+//  BOTS
+// ══════════════════════════════════════════
+let activeBotIndex = null; // which bot is currently being customized
+let bcAvatarBase64 = null; // pending new avatar data
+let bcBannerBase64 = null; // pending new banner data
+let currentBotUsername = ''; // track current username so we only patch if changed
+
+function renderBots() {
+  const list  = document.getElementById('bots-list');
+  const empty = document.getElementById('bots-empty');
+  const customizer = document.getElementById('bot-customizer');
+  list.innerHTML = '';
+  customizer.style.display = 'none';
+  activeBotIndex = null;
+  if (bots.length === 0) { empty.style.display = ''; return; }
+  empty.style.display = 'none';
+  bots.forEach((b, i) => {
+    const card = document.createElement('div');
+    card.className = 'item-card';
+    card.innerHTML = `
+      <div class="item-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><rect x="3" y="11" width="18" height="10" rx="2"></rect><circle cx="12" cy="5" r="2"></circle><path d="M12 7v4"></path><line x1="8" y1="16" x2="8" y2="16"></line><line x1="16" y1="16" x2="16" y2="16"></line></svg></div>
+      <div class="item-info">
+        <div class="item-name">${esc(b.name)}</div>
+        <div class="item-sub">${b.token ? b.token.substring(0,14) + '••••' : '—'}</div>
+      </div>
+      <div class="item-actions">
+        <button class="btn-sm" title="تخصيص" onclick="openBotCustomizer(${i})"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg></button>
+        <button class="btn-sm danger" title="حذف" onclick="deleteBot(${i})">✕</button>
+      </div>`;
+    list.appendChild(card);
+  });
+}
+
+function openAddBotModal() {
+  document.getElementById('bot-name-input').value  = '';
+  document.getElementById('bot-token-input').value = '';
+  showModal('modal-add-bot');
+  setTimeout(() => document.getElementById('bot-name-input').focus(), 100);
+}
+
+async function confirmAddBot() {
+  const name  = document.getElementById('bot-name-input').value.trim();
+  const token = document.getElementById('bot-token-input').value.trim();
+  if (!name || !token) { toast('أدخل الاسم والتوكن', 'error'); return; }
+  bots.push({ name, token });
+  await window.rpc.saveBots(bots);
+  renderBots();
+  closeModal('modal-add-bot');
+  toast('✅ تم حفظ التوكن بشكل مشفر', 'success');
+}
+
+function toggleTokenVis() {
+  const inp = document.getElementById('bot-token-input');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+
+async function openBotCustomizer(i) {
+  const b = bots[i];
+  if (!b?.token) return;
+  activeBotIndex = i;
+  bcAvatarBase64 = null;
+
+  toast('<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M5 22h14"></path><path d="M5 2h14"></path><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"></path><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"></path></svg> جاري جلب بيانات البوت...', 'info');
+  document.getElementById('bot-customizer').style.display = 'block';
+
+  try {
+    const [userRes, appRes] = await Promise.all([
+      fetch('https://discord.com/api/v10/users/@me', { headers: { Authorization: `Bot ${b.token}` }, signal: AbortSignal.timeout(8000) }),
+      fetch('https://discord.com/api/v10/oauth2/applications/@me', { headers: { Authorization: `Bot ${b.token}` }, signal: AbortSignal.timeout(8000) }),
+    ]);
+    const userData = await userRes.json();
+    const appData  = appRes.ok ? await appRes.json() : {};
+
+    if (!userRes.ok) { toast('❌ توكن غير صالح', 'error'); document.getElementById('bot-customizer').style.display='none'; return; }
+
+    const av = userData.avatar
+      ? `https://cdn.discordapp.com/avatars/${userData.id}/${userData.avatar}.png?size=256`
+      : `https://cdn.discordapp.com/embed/avatars/0.png`;
+
+    const banner = userData.banner
+      ? `https://cdn.discordapp.com/banners/${userData.id}/${userData.banner}.png?size=512`
+      : '';
+    document.getElementById('bc-banner-bg').style.backgroundImage = banner ? `url('${banner}')` : '';
+
+    currentBotUsername = userData.username;
+    document.getElementById('bc-avatar').src         = av;
+    document.getElementById('bc-display-name').textContent = userData.username;
+    document.getElementById('bc-display-tag').textContent  = `#${userData.discriminator || '0000'} · ${userData.id}`;
+    document.getElementById('bc-username').value     = userData.username;
+    document.getElementById('bc-bio').value          = appData.description || '';
+    updateBioCount();
+
+    toast(`✅ ${userData.username} — جاهز للتعديل`, 'success');
+  } catch (e) {
+    toast('❌ فشل الاتصال', 'error');
+    document.getElementById('bot-customizer').style.display = 'none';
+  }
+}
+
+function handleBotAvatarFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onloadend = () => {
+    bcAvatarBase64 = reader.result;
+    document.getElementById('bc-avatar').src = reader.result;
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+
+function handleBotBannerFile(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onloadend = () => {
+    bcBannerBase64 = reader.result;
+    document.getElementById('bc-banner-bg').style.backgroundImage = `url('${reader.result}')`;
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+
+async function updateBotProfile() {
+  if (activeBotIndex === null) return;
+  const b = bots[activeBotIndex];
+  const btn = document.getElementById('bc-save-txt');
+  btn.innerHTML = '<span class="spinner"></span>';
+
+  const newUsername = document.getElementById('bc-username').value.trim();
+  const payload = {};
+  
+  if (newUsername && newUsername !== currentBotUsername) payload.username = newUsername;
+  if (bcAvatarBase64) payload.avatar = bcAvatarBase64;
+  if (bcBannerBase64) payload.banner = bcBannerBase64;
+
+  try {
+    let successCount = 0;
+    
+    // Only call users API if we have something to update there
+    if (Object.keys(payload).length > 0) {
+      const res = await fetch('https://discord.com/api/v10/users/@me', {
+        method: 'PATCH',
+        headers: { Authorization: `Bot ${b.token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(10000),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        let errMsg = '❌ فشل التحديث: ' + JSON.stringify(data);
+        if (data.retry_after) {
+          errMsg = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M5 22h14"></path><path d="M5 2h14"></path><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"></path><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"></path></svg> Rate Limit: انتظر ${Math.ceil(data.retry_after)} ثانية لتغيير معلومات الحساب`;
+        } else if (data.errors?.username?._errors?.[0]) {
+          const uErr = data.errors.username._errors[0];
+          if (uErr.code === 'USERNAME_TOO_MANY_USERS') {
+            errMsg = '❌ هذا الاسم مستخدم بكثرة (أكثر من اللازم). جرب اسماً مختلفاً أو أضف رمزاً.';
+          } else {
+            errMsg = `❌ خطأ في الاسم: ${uErr.message}`;
+          }
+        }
+        toast(errMsg, 'error', 5000);
+        btn.innerHTML = ' width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> حفظ التغييرات';
+        return;
+      } else {
+        document.getElementById('bc-display-name').textContent = data.username;
+        currentBotUsername = data.username;
+      }
+    }
+
+    // Update bio via application endpoint
+    const bio = document.getElementById('bc-bio').value.trim();
+    const appRes = await fetch('https://discord.com/api/v10/applications/@me', {
+      method: 'PATCH',
+      headers: { Authorization: `Bot ${b.token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ description: bio }),
+      signal: AbortSignal.timeout(10000),
+    });
+
+    if (appRes.ok) {
+      bcAvatarBase64 = null;
+      bcBannerBase64 = null;
+      toast('✅ تم تحديث ملف البوت بنجاح!', 'success');
+    } else {
+      toast('⚠️ تم التحديث جزئياً، فشل تحديث البايو', 'error');
+    }
+  } catch (e) { toast('❌ فشل الاتصال بخوادم ديسكورد', 'error'); }
+  btn.innerHTML = ' width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> حفظ التغييرات';
+}
+
+let bcStatus = 'online';
+let botGatewayWs = null;
+let botHeartbeatInterval = null;
+
+function setStatusPill(status) {
+  bcStatus = status;
+  document.querySelectorAll('.status-pill').forEach(p => p.classList.toggle('active', p.dataset.status === status));
+}
+
+function toggleBotStreamUrl(val) {
+  const field = document.getElementById('bc-stream-field');
+  if (field) field.style.display = parseInt(val) === 1 ? 'block' : 'none';
+}
+
+async function updateBotStatus() {
+  if (activeBotIndex === null) return;
+  const b = bots[activeBotIndex];
+  const actType = parseInt(document.getElementById('bc-activity-type').value);
+  const actName = document.getElementById('bc-activity-name').value.trim();
+  const streamUrl = document.getElementById('bc-stream-url')?.value.trim() || 'https://twitch.tv/discord';
+  const btnText = document.getElementById('bc-status-txt');
+  const btnParent = btnText.parentElement;
+  
+  if (botGatewayWs) {
+    if (botGatewayWs.readyState === WebSocket.OPEN) {
+      botGatewayWs.send(JSON.stringify({
+        op: 3,
+        d: { status: 'invisible', since: 0, afk: false, activities: [] }
+      }));
+    }
+    botGatewayWs.close(1000);
+    botGatewayWs = null;
+    if (botHeartbeatInterval) clearInterval(botHeartbeatInterval);
+    btnText.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg> تطبيق الحالة';
+    btnParent.classList.remove('btn-3d-red');
+    btnParent.classList.add('btn-3d-green');
+    toast('🛑 تم إيقاف اتصال البوت', 'info');
+    return;
+  }
+
+  btnText.innerHTML = '<span class="spinner"></span> جاري الاتصال...';
+
+  try {
+    botGatewayWs = new WebSocket('wss://gateway.discord.gg/?v=10&encoding=json');
+    
+    botGatewayWs.onopen = () => {
+      const activities = [];
+      if (actName) {
+        const actObj = { name: actName, type: actType };
+        if (actType === 1 && streamUrl) {
+          actObj.url = streamUrl;
+        }
+        activities.push(actObj);
+      }
+
+      // Send Identify
+      const payload = {
+        op: 2,
+        d: {
+          token: b.token,
+          properties: { os: 'windows', browser: 'SentryRPC', device: 'SentryRPC' },
+          presence: {
+            status: bcStatus,
+            since: 0,
+            afk: false,
+            activities: activities
+          },
+          intents: 0
+        }
+      };
+      botGatewayWs.send(JSON.stringify(payload));
+    };
+
+    botGatewayWs.onmessage = (msg) => {
+      const data = JSON.parse(msg.data);
+      if (data.op === 10) {
+        botHeartbeatInterval = setInterval(() => {
+          if (botGatewayWs && botGatewayWs.readyState === WebSocket.OPEN) {
+            botGatewayWs.send(JSON.stringify({ op: 1, d: null }));
+          }
+        }, data.d.heartbeat_interval);
+        
+        btnText.innerHTML = 'إيقاف البوت';
+        btnParent.classList.remove('btn-3d-green');
+        btnParent.classList.add('btn-3d-red');
+        toast('<span class="status-dot" style="background:var(--color-success, #22c55e); display:inline-block; margin-left:4px;"></span> البوت متصل الآن بالحالة الجديدة!', 'success');
+      }
+      if (data.op === 9) {
+        toast('❌ انتهت الجلسة (Invalid Session)', 'error');
+        botGatewayWs.close();
+      }
+    };
+
+    botGatewayWs.onclose = () => {
+      botGatewayWs = null;
+      if (botHeartbeatInterval) clearInterval(botHeartbeatInterval);
+      btnText.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg> تطبيق الحالة';
+      btnParent.classList.remove('btn-3d-red');
+      btnParent.classList.add('btn-3d-green');
+    };
+    
+    botGatewayWs.onerror = () => {
+      toast('❌ فشل الاتصال بخوادم ديسكورد', 'error');
+      btnText.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg> تطبيق الحالة';
+      btnParent.classList.remove('btn-3d-red');
+      btnParent.classList.add('btn-3d-green');
+    };
+
+  } catch (e) {
+    toast('❌ خطأ غير متوقع', 'error');
+    btnText.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg> تطبيق الحالة';
+  }
+}
+
+function updateBioCount() {
+  const bio = document.getElementById('bc-bio');
+  const cc  = document.getElementById('bc-bio-count');
+  if (!bio || !cc) return;
+  cc.textContent = `${bio.value.length}/190`;
+  bio.addEventListener('input', () => { cc.textContent = `${bio.value.length}/190`; });
+}
+
+async function deleteBot(i) {
+  bots.splice(i, 1);
+  await window.rpc.saveBots(bots);
+  renderBots();
+  toast('تم حذف التوكن', 'info');
+}
+
+// ══════════════════════════════════════════
+//  GUILDS / SERVERS INFO
+// ══════════════════════════════════════════
+async function loadBotGuilds() {
+  if (activeBotIndex === null) return;
+  const b = bots[activeBotIndex];
+  const listEl  = document.getElementById('bc-guilds-list');
+  const statsEl = document.getElementById('bc-guilds-stats');
+  listEl.innerHTML = '<div class="guilds-placeholder"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M5 22h14"></path><path d="M5 2h14"></path><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"></path><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"></path></svg> جاري التحميل...</div>';
+
+  try {
+    const res  = await fetch('https://discord.com/api/v10/users/@me/guilds?with_counts=true', {
+      headers: { Authorization: `Bot ${b.token}` },
+      signal: AbortSignal.timeout(10000),
+    });
+    const guilds = await res.json();
+    if (!res.ok) { listEl.innerHTML = '<div class="guilds-placeholder">❌ فشل التحميل</div>'; return; }
+
+    // Stats
+    const totalMembers = guilds.reduce((s, g) => s + (g.approximate_member_count || 0), 0);
+    document.getElementById('bc-guild-count').textContent = `${guilds.length} سيرفر`;
+    document.getElementById('bc-member-est').textContent  = totalMembers > 0 ? `~${totalMembers.toLocaleString()} عضو` : '— عضو';
+    statsEl.style.display = 'flex';
+
+    // List
+    listEl.innerHTML = '';
+    if (guilds.length === 0) {
+      listEl.innerHTML = '<div class="guilds-placeholder">البوت غير موجود في أي سيرفر</div>';
+      return;
+    }
+
+    guilds.forEach(g => {
+      const item = document.createElement('div');
+      item.className = 'guild-item';
+
+      // Determine role badge
+      const isOwner = g.owner;
+      const isAdmin = !isOwner && (g.permissions & 0x8) !== 0;
+      const badge   = isOwner ? '<span class="guild-badge owner"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><polygon points="2 16 22 16 18 4 15 10 12 2 9 10 6 4 2 16"></polygon><path d="M2 20h20"></path></svg> مالك</span>'
+                    : isAdmin ? '<span class="guild-badge admin"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> أدمن</span>'
+                    :           '<span class="guild-badge member">عضو</span>';
+
+      // Icon
+      const iconHtml = g.icon
+        ? `<div class="guild-icon"><img src="https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png?size=64" alt="" onerror="this.parentElement.textContent='${esc(g.name[0]||'?')}'" /></div>`
+        : `<div class="guild-icon">${esc(g.name[0] || '?')}</div>`;
+
+      const memberCount = g.approximate_member_count ? `· ${g.approximate_member_count.toLocaleString()} عضو` : '';
+
+      item.innerHTML = `
+        ${iconHtml}
+        <div class="guild-info">
+          <div class="guild-name">${esc(g.name)}</div>
+          <div class="guild-id">${g.id} ${memberCount}</div>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+          ${badge}
+        </div>`;
+
+      if (!isOwner) {
+        const btn = document.createElement('button');
+        btn.className = 'btn-sm danger';
+        btn.style = 'padding:4px 8px; font-size:11px; background:var(--color-error); border:none; border-radius:4px; color:#fff; cursor:pointer; margin-right:8px;';
+        btn.title = 'مغادرة السيرفر';
+        btn.innerHTML = svgIcon('<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line>');
+        btn.onclick = () => leaveGuild(g.id, g.name);
+        item.querySelector('div[style*="display:flex"]').appendChild(btn);
+      }
+
+      listEl.appendChild(item);
+    });
+
+    toast(`✅ تم تحميل ${guilds.length} سيرفر`, 'success');
+  } catch (e) {
+    listEl.innerHTML = '<div class="guilds-placeholder">❌ فشل الاتصال</div>';
+    toast('❌ فشل جلب السيرفرات', 'error');
+  }
+}
+
+// ══════════════════════════════════════════
+
+async function leaveGuild(guildId, guildName) {
+  if (activeBotIndex === null) return;
+  if (!confirm(`هل أنت متأكد من رغبتك في مغادرة البوت لسيرفر: ${guildName}؟`)) return;
+  const b = bots[activeBotIndex];
+  toast('⏳ جاري المغادرة...', 'info');
+  try {
+    const res = await fetch(`https://discord.com/api/v10/users/@me/guilds/${guildId}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bot ${b.token}` },
+      signal: AbortSignal.timeout(8000),
+    });
+    if (res.ok || res.status === 204) {
+      toast('✅ تمت المغادرة بنجاح!', 'success');
+      loadBotGuilds();
+    } else {
+      const d = await res.json().catch(()=>({}));
+      toast('❌ فشل المغادرة: ' + (d.message || 'خطأ'), 'error');
+    }
+  } catch (e) {
+    toast('❌ فشل الاتصال بخوادم ديسكورد', 'error');
+  }
+}
+
+//  MESSAGE SENDER
+// ══════════════════════════════════════════
+let msgType = 'dm'; // 'dm' | 'channel'
+
+function setMsgType(type) {
+  msgType = type;
+  document.getElementById('msgt-dm').classList.toggle('active',      type === 'dm');
+  document.getElementById('msgt-channel').classList.toggle('active', type === 'channel');
+  document.getElementById('msg-target-label').textContent =
+    type === 'dm' ? 'معرّف المستخدم (User ID)' : 'معرّف الروم / القناة (Channel ID)';
+  document.getElementById('msg-target').placeholder =
+    type === 'dm' ? '123456789012345678' : '987654321098765432';
+  document.getElementById('msg-result').style.display = 'none';
+}
+
+function toggleEmbedFields() {
+  const on = document.getElementById('msg-embed-toggle').checked;
+  document.getElementById('embed-fields').style.display = on ? 'flex' : 'none';
+}
+
+// Init message char counter
+document.addEventListener('DOMContentLoaded', () => {
+  const mc = document.getElementById('msg-content');
+  if (mc) mc.addEventListener('input', () => {
+    document.getElementById('msg-cc').textContent = `${mc.value.length}/2000`;
+  });
+});
+
+async function sendBotMessage() {
+  if (activeBotIndex === null) { toast('اختر بوتاً أولاً', 'error'); return; }
+  const b       = bots[activeBotIndex];
+  const target  = document.getElementById('msg-target').value.trim();
+  const content = document.getElementById('msg-content').value.trim();
+  const useEmbed= document.getElementById('msg-embed-toggle').checked;
+
+  if (!target)  { toast('أدخل معرّف المستخدم أو الروم', 'error'); return; }
+  if (!content && !useEmbed) { toast('أدخل نص الرسالة', 'error'); return; }
+
+  const btn = document.getElementById('msg-send-txt');
+  btn.innerHTML = '<span class="spinner"></span>';
+
+  const resultEl = document.getElementById('msg-result');
+  resultEl.style.display = 'none';
+
+  try {
+    let channelId = target;
+
+    // For DM: first open DM channel
+    if (msgType === 'dm') {
+      const dmRes  = await fetch('https://discord.com/api/v10/users/@me/channels', {
+        method: 'POST',
+        headers: { Authorization: `Bot ${b.token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ recipient_id: target }),
+        signal: AbortSignal.timeout(8000),
+      });
+      const dmData = await dmRes.json();
+      if (!dmRes.ok) {
+        const err = dmData.message || JSON.stringify(dmData);
+        showMsgResult('error', `❌ فشل فتح رسالة خاصة: ${err}`);
+        btn.innerHTML = buildSendBtnContent();
+        return;
+      }
+      channelId = dmData.id;
+    }
+
+    // Build message body
+    const body = {};
+    if (content) body.content = content;
+    if (useEmbed) {
+      const title  = document.getElementById('embed-title').value.trim();
+      const desc   = document.getElementById('embed-desc').value.trim();
+      const img    = document.getElementById('embed-img').value.trim();
+      
+      const thumbEl = document.getElementById('embed-thumb');
+      const authorEl = document.getElementById('embed-author');
+      const authorIconEl = document.getElementById('embed-author-icon');
+      const footerEl = document.getElementById('embed-footer');
+      const footerIconEl = document.getElementById('embed-footer-icon');
+      
+      const thumb  = thumbEl ? thumbEl.value.trim() : '';
+      const author = authorEl ? authorEl.value.trim() : '';
+      const authorIcon = authorIconEl ? authorIconEl.value.trim() : '';
+      const footer = footerEl ? footerEl.value.trim() : '';
+      const footerIcon = footerIconEl ? footerIconEl.value.trim() : '';
+      
+      const hexCol = document.getElementById('embed-color').value.trim().replace('#', '');
+      const color  = hexCol ? parseInt(hexCol, 16) : 0x6366f1;
+      const embed  = { color };
+      
+      if (title) embed.title = title;
+      if (desc)  embed.description = desc;
+      if (img)   embed.image = { url: img };
+      if (thumb) embed.thumbnail = { url: thumb };
+      
+      if (author || authorIcon) {
+        embed.author = {};
+        if (author) embed.author.name = author;
+        if (authorIcon) embed.author.icon_url = authorIcon;
+      }
+      
+      if (footer || footerIcon) {
+        embed.footer = {};
+        if (footer) embed.footer.text = footer;
+        if (footerIcon) embed.footer.icon_url = footerIcon;
+      }
+      
+      body.embeds = [embed];
+    }
+
+    const sendRes  = await fetch(`https://discord.com/api/v10/channels/${channelId}/messages`, {
+      method: 'POST',
+      headers: { Authorization: `Bot ${b.token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(10000),
+    });
+    const sendData = await sendRes.json();
+
+    if (sendRes.ok) {
+      const dest = msgType === 'dm' ? `خاص مع ${target}` : `روم ${channelId}`;
+      showMsgResult('ok', `✅ تم الإرسال بنجاح إلى ${dest}`);
+      toast('✅ الرسالة وصلت!', 'success');
+      document.getElementById('msg-content').value = '';
+      document.getElementById('msg-cc').textContent = '0/2000';
+    } else {
+      const err = sendData.message || JSON.stringify(sendData);
+      showMsgResult('error', `❌ ${err}`);
+    }
+  } catch (e) {
+    showMsgResult('error', '❌ فشل الاتصال: ' + e.message);
+  }
+
+  btn.innerHTML = buildSendBtnContent();
+}
+
+function buildSendBtnContent() {
+  return `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> إرسال`;
+}
+
+function showMsgResult(type, msg) {
+  const el = document.getElementById('msg-result');
+  el.className = 'msg-result ' + type;
+  el.innerHTML = msg;
+  el.style.display = 'block';
+}
+
+// ══════════════════════════════════════════
+//  PREVIEW
+// ══════════════════════════════════════════
+function debouncedPreview() {
+  clearTimeout(previewDebounce);
+  previewDebounce = setTimeout(updatePreview, 400);
+}
+
+function updatePreview() {
+  const cfg = collectConfig();
+
+  const largeEl = document.getElementById('pv-large-img');
+  const smallEl = document.getElementById('pv-small-img');
+  const details  = document.getElementById('pv-details');
+  const state    = document.getElementById('pv-state');
+  const timeEl   = document.getElementById('pv-time');
+  const btns     = document.getElementById('pv-buttons');
+
+  if (cfg.largeImageKey?.startsWith('http')) {
+    largeEl.src = cfg.largeImageKey; largeEl.classList.add('show');
+  } else { largeEl.classList.remove('show'); }
+
+  if (cfg.smallImageKey?.startsWith('http')) {
+    smallEl.src = cfg.smallImageKey; smallEl.classList.add('show');
+  } else { smallEl.classList.remove('show'); }
+
+  if (cfg.details) { details.textContent = cfg.details; details.style.display = ''; }
+  else { details.style.display = 'none'; }
+
+  if (cfg.state) { state.textContent = cfg.state; state.style.display = ''; }
+  else { state.style.display = 'none'; }
+
+  if (cfg.startTimestamp) { timeEl.textContent = '00:00 مضت'; timeEl.style.display = ''; }
+  else { timeEl.style.display = 'none'; }
+
+  btns.innerHTML = '';
+  if (cfg.button1Label) { const d = document.createElement('div'); d.className='dc-btn'; d.textContent=cfg.button1Label; btns.appendChild(d); }
+  if (cfg.button2Label) { const d = document.createElement('div'); d.className='dc-btn'; d.textContent=cfg.button2Label; btns.appendChild(d); }
+}
+
+// ══════════════════════════════════════════
+//  DISCORD PROFILE & BADGES
+// ══════════════════════════════════════════
+let currentDiscordUser = null;
+
+const DISCORD_BADGE_DEFS = [
+  { key: 'nitro', name: 'مشترك ديسكورد نيترو (Discord Nitro)', check: (_f, p) => p > 0, svg: `<svg viewBox="0 0 24 24" fill="#f47fff"><path d="M4.09 13.43c-.45.31-.69.83-.62 1.37.28 2.25 1.48 4.25 3.29 5.48.44.3 1.01.29 1.43-.03l3.81-2.93-7.91-3.89zm15.82 0l-7.91 3.89 3.81 2.93c.42.32.99.33 1.43.03 1.81-1.23 3.01-3.23 3.29-5.48.07-.54-.17-1.06-.62-1.37zM12 2L9.17 7.74 3.02 8.63c-.53.08-.74.73-.36 1.1l4.45 4.34-1.05 6.13c-.09.53.47.93.94.69L12 18l5 2.89c.47.24 1.03-.16.94-.69l-1.05-6.13 4.45-4.34c.38-.37.17-1.02-.36-1.1l-6.15-.89L12 2z"/></svg>` },
+  { key: 'hypesquad_bravery', name: 'هايب سكواد الشجاعة (HypeSquad Bravery)', check: (f) => !!(f & (1 << 6)), svg: `<svg viewBox="0 0 24 24"><path fill="#9c84ef" d="M12 2.5L3.5 6.5V12C3.5 17.5 7.1 22.1 12 23.5C16.9 22.1 20.5 17.5 20.5 12V6.5L12 2.5ZM12 6.2L17.5 8.8V12C17.5 15.6 15.1 18.9 12 20.1C8.9 18.9 6.5 15.6 6.5 12V8.8L12 6.2ZM12 8.5L9 14.5H11.5V17.5L15 11.5H12.5V8.5Z"/></svg>` },
+  { key: 'hypesquad_brilliance', name: 'هايب سكواد الذكاء (HypeSquad Brilliance)', check: (f) => !!(f & (1 << 7)), svg: `<svg viewBox="0 0 24 24"><path fill="#f47b67" d="M12 2.5L3.5 6.5V12C3.5 17.5 7.1 22.1 12 23.5C16.9 22.1 20.5 17.5 20.5 12V6.5L12 2.5ZM12 6.5L17 12L12 17.5L7 12L12 6.5Z"/></svg>` },
+  { key: 'hypesquad_balance', name: 'هايب سكواد التوازن (HypeSquad Balance)', check: (f) => !!(f & (1 << 8)), svg: `<svg viewBox="0 0 24 24"><path fill="#45ddc0" d="M12 2.5L3.5 6.5V12C3.5 17.5 7.1 22.1 12 23.5C16.9 22.1 20.5 17.5 20.5 12V6.5L12 2.5ZM7.5 10.5L12 7.5L16.5 10.5L12 18.5L7.5 10.5Z"/></svg>` },
+  { key: 'active_dev', name: 'مطور نشط (Active Developer)', check: (f) => !!(f & (1 << 22)), svg: `<svg viewBox="0 0 24 24"><path fill="#23a55a" d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM8.46 8.46L11 11L8.46 13.54L7.05 12.12L8.17 11L7.05 9.88L8.46 8.46ZM12 16H17V14.5H12V16ZM15.54 11L16.95 9.59L15.54 8.17L14.12 9.59L15.54 11Z"/></svg>` },
+  { key: 'early_supporter', name: 'داعم مبكر (Early Supporter)', check: (f) => !!(f & (1 << 9)), svg: `<svg viewBox="0 0 24 24"><path fill="#f47fff" d="M19 4h-2V2H7v2H5c-1.1 0-2 .9-2 2v3c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0 0 11 17.9V20H8v2h8v-2h-3v-2.1c1.92-.45 3.42-1.99 3.61-3.96C19.08 13.63 21 11.55 21 9V6c0-1.1-.9-2-2-2zM5 9V6h2v5.08C5.83 10.63 5 9.9 5 9zm14 0c0 .9-.83 1.63-2 2.08V6h2v3z"/></svg>` },
+  { key: 'bot_dev', name: 'مطور بوت معتمد مبكر (Verified Bot Developer)', check: (f) => !!(f & (1 << 17)), svg: `<svg viewBox="0 0 24 24"><path fill="#5865f2" d="M12 2L2 7V17L12 22L22 17V7L12 2ZM12 4.5L19.5 8.25V15.75L12 19.5L4.5 15.75V8.25L12 4.5ZM10.5 7.5L8.5 9.5L11 12L8.5 14.5L10.5 16.5L14.5 12.5L10.5 7.5Z"/></svg>` },
+  { key: 'bug_hunter_1', name: 'صياد ثغرات المستوى 1 (Bug Hunter)', check: (f) => !!(f & (1 << 3)), svg: `<svg viewBox="0 0 24 24"><path fill="#3ba55c" d="M19 8h-1.81a5.985 5.985 0 0 0-1.82-1.96l1.39-1.39-1.41-1.41-1.83 1.83C12.8 4.7 12.41 4.56 12 4.56c-.41 0-.8.14-1.52.51L8.65 3.24 7.24 4.65l1.39 1.39A5.985 5.985 0 0 0 6.81 8H5v2h1.09c-.06.33-.09.66-.09 1v1H4v2h2v1c0 .34.03.67.09 1H5v2h1.81c1.04 1.79 2.97 3 5.19 3s4.15-1.21 5.19-3H19v-2h-1.09c.06-.33.09-.66.09-1v-1h2v-2h-2v-1c0-.34-.03-.67-.09-1H19V8zm-6 8h-2v-2h2v2zm0-4h-2v-2h2v2z"/></svg>` },
+  { key: 'bug_hunter_2', name: 'صياد ثغرات ذهبي المستوى 2 (Bug Hunter Gold)', check: (f) => !!(f & (1 << 14)), svg: `<svg viewBox="0 0 24 24"><path fill="#faa61a" d="M19 8h-1.81a5.985 5.985 0 0 0-1.82-1.96l1.39-1.39-1.41-1.41-1.83 1.83C12.8 4.7 12.41 4.56 12 4.56c-.41 0-.8.14-1.52.51L8.65 3.24 7.24 4.65l1.39 1.39A5.985 5.985 0 0 0 6.81 8H5v2h1.09c-.06.33-.09.66-.09 1v1H4v2h2v1c0 .34.03.67.09 1H5v2h1.81c1.04 1.79 2.97 3 5.19 3s4.15-1.21 5.19-3H19v-2h-1.09c.06-.33.09-.66.09-1v-1h2v-2h-2v-1c0-.34-.03-.67-.09-1H19V8zm-6 8h-2v-2h2v2zm0-4h-2v-2h2v2z"/></svg>` },
+  { key: 'certified_mod', name: 'مشرف ديسكورد معتمد (Discord Moderator)', check: (f) => !!(f & (1 << 18)), svg: `<svg viewBox="0 0 24 24"><path fill="#5865f2" d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3zm6 9.09c0 4-2.55 7.7-6 8.83-3.45-1.13-6-4.82-6-8.83V6.31l6-2.25 6 2.25v4.78zM12 8a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/></svg>` },
+  { key: 'partner', name: 'مالك سيرفر شريك (Partnered Server Owner)', check: (f) => !!(f & (1 << 1)), svg: `<svg viewBox="0 0 24 24"><path fill="#5865f2" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 14h-2v-2h2v2zm0-4h-2V7h2v5z"/></svg>` },
+  { key: 'staff', name: 'موظف ديسكورد (Discord Staff)', check: (f) => !!(f & (1 << 0)), svg: `<svg viewBox="0 0 24 24"><path fill="#5865f2" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-6h2v6zm0-8h-2V7h2v2zm4 8h-2v-4h2v4zm0-6h-2V7h2v4z"/></svg>` }
+];
+
+function updateDiscordProfileUI(user) {
+  if (!user || !user.id) return;
+  currentDiscordUser = user;
+
+  // 1. Avatar
+  const avEl = document.getElementById('pv-avatar');
+  if (avEl && user.avatarUrl) {
+    avEl.src = user.avatarUrl;
+  }
+
+  // 2. Avatar Decoration
+  const decorEl = document.getElementById('pv-avatar-decor');
+  if (decorEl) {
+    if (user.avatarDecorationUrl) {
+      decorEl.src = user.avatarDecorationUrl;
+      decorEl.style.display = 'block';
+    } else {
+      decorEl.style.display = 'none';
+      decorEl.src = '';
+    }
+  }
+
+  // 3. Names
+  const gnEl = document.getElementById('pv-globalname');
+  if (gnEl) {
+    gnEl.textContent = user.global_name || user.username || 'مستخدم ديسكورد';
+  }
+  const unEl = document.getElementById('pv-username');
+  if (unEl) {
+    unEl.textContent = `@${user.username}`;
+  }
+
+  // 4. Badges
+  const badgesEl = document.getElementById('pv-badges');
+  if (badgesEl) {
+    const matchedBadges = DISCORD_BADGE_DEFS.filter(b => b.check(user.flags, user.premiumType));
+    if (matchedBadges.length > 0) {
+      badgesEl.innerHTML = matchedBadges.map(b => `
+        <div class="dc-badge-chip" title="${esc(b.name)}" data-badge="${b.key}">
+          ${b.svg}
+        </div>
+      `).join('');
+      badgesEl.style.display = 'flex';
+    } else {
+      badgesEl.innerHTML = '';
+      badgesEl.style.display = 'none';
+    }
+  }
+
+  // 5. Titlebar Discord Status Pill
+  const dot = document.getElementById('discord-dot');
+  const txt = document.getElementById('discord-text');
+  if (dot) dot.style.background = '#22c55e';
+  if (txt) {
+    txt.style.color = '#22c55e';
+    txt.textContent = user.global_name || user.username;
+  }
+
+  // 6. Account Sync Bar
+  const dabDot = document.getElementById('dab-dot');
+  if (dabDot) dabDot.classList.add('online');
+  const dabInfo = document.getElementById('dab-account-info');
+  if (dabInfo) {
+    dabInfo.textContent = `متصل بحساب: ${user.global_name || user.username} (@${user.username})`;
+  }
+  const dabId = document.getElementById('dab-user-id');
+  if (dabId) {
+    dabId.textContent = `ID: ${user.id}`;
+    dabId.style.display = 'block';
+  }
+}
+
+async function handleRefreshDiscordUser(silent = false) {
+  const syncBtn = document.getElementById('btn-sync-discord');
+  if (syncBtn && !silent) {
+    syncBtn.disabled = true;
+    syncBtn.innerHTML = '<span class="spinner"></span>';
+  }
+
+  try {
+    const user = await window.rpc.getDiscordUser();
+    if (user && user.id) {
+      updateDiscordProfileUI(user);
+      if (!silent) {
+        toast(`✅ تم تحديث بروفايل ديسكورد: ${user.global_name || user.username}`, 'success');
+      }
+    } else {
+      if (!silent) {
+        toast('❌ ' + (user?.error || 'تعذر الاتصال بديسكورد. تأكد أنه يعمل.'), 'error');
+      }
+    }
+  } catch (e) {
+    if (!silent) toast('❌ خطأ في الاتصال بديسكورد', 'error');
+  } finally {
+    if (syncBtn && !silent) {
+      syncBtn.disabled = false;
+      syncBtn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg> تحديث الحساب';
+    }
+  }
+}
+
+function handleCopyDiscordUserId() {
+  if (currentDiscordUser && currentDiscordUser.id) {
+    navigator.clipboard.writeText(currentDiscordUser.id);
+    toast(`📋 تم نسخ معرف الحساب (${currentDiscordUser.id}) بنجاح`, 'success');
+  } else {
+    toast('⚠️ لم يتم التعرف على حساب متصل بعد', 'info');
+  }
+}
+
+// ══════════════════════════════════════════
+//  IMAGE UPLOAD & CROP
+// ══════════════════════════════════════════
+function handleFileUpload(e, target) {
+  const file = e.target.files[0];
+  if (!file) return;
+  cropTarget = target;
+  const reader = new FileReader();
+  reader.onloadend = () => { cropSrc = reader.result; openCropModal(reader.result); };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+
+function openCropModal(src) {
+  const img  = document.getElementById('crop-img');
+  img.src    = src;
+  document.getElementById('crop-zoom').value = 1;
+  document.getElementById('crop-x').value    = 0;
+  document.getElementById('crop-y').value    = 0;
+  document.getElementById('crop-zoom-val').textContent = '1.0×';
+  applyCropTransform();
+  showModal('modal-crop');
+}
+
+function applyCropTransform() {
+  const zoom = parseFloat(document.getElementById('crop-zoom').value);
+  const x    = parseInt(document.getElementById('crop-x').value);
+  const y    = parseInt(document.getElementById('crop-y').value);
+  document.getElementById('crop-zoom-val').textContent = zoom.toFixed(1) + '×';
+  document.getElementById('crop-img').style.transform =
+    `translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) scale(${zoom})`;
+}
+
+async function confirmCrop() {
+  if (!cropSrc) return;
+  const btn = document.getElementById('crop-btn-txt');
+  btn.innerHTML = '<span class="spinner"></span>';
+  document.getElementById('crop-confirm-btn').disabled = true;
+
+  const zoom = parseFloat(document.getElementById('crop-zoom').value);
+  const cx   = parseInt(document.getElementById('crop-x').value);
+  const cy   = parseInt(document.getElementById('crop-y').value);
+
+  const container = document.getElementById('crop-container');
+  const w = container.offsetWidth, h = container.offsetHeight;
+  const canvas = document.createElement('canvas');
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext('2d');
+
+  const image = new Image();
+  image.src   = cropSrc;
+  await new Promise(r => { image.onload = r; });
+
+  const scale = Math.min(w / image.naturalWidth, h / image.naturalHeight) * zoom;
+  const iw = image.naturalWidth * scale;
+  const ih = image.naturalHeight * scale;
+  ctx.drawImage(image, (w - iw) / 2 + cx, (h - ih) / 2 + cy, iw, ih);
+
+  const dataUrl = canvas.toDataURL('image/png', 0.92);
+  toast('<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M5 22h14"></path><path d="M5 2h14"></path><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"></path><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"></path></svg> جاري رفع الصورة...', 'info');
+  const res = await window.rpc.uploadImage(dataUrl);
+
+  btn.textContent = 'رفع الصورة';
+  document.getElementById('crop-confirm-btn').disabled = false;
+
+  if (res?.success) {
+    const field = cropTarget === 'large' ? 'largeImageKey' : 'smallImageKey';
+    document.getElementById(field).value = res.url;
+    updateThumb(cropTarget, res.url);
+    debouncedPreview();
+    debouncedAutoSave(true);
+    closeModal('modal-crop');
+    toast('✅ تم رفع الصورة بنجاح!', 'success');
+  } else {
+    toast('❌ فشل الرفع: ' + (res?.error || 'خطأ'), 'error');
+  }
+}
+
+function onImageKeyInput(which) {
+  updateThumb(which, document.getElementById(which === 'large' ? 'largeImageKey' : 'smallImageKey').value);
+  debouncedPreview();
+  debouncedAutoSave(false);
+}
+
+function updateThumb(which, url) {
+  const id  = which === 'large' ? 'large-thumb' : 'small-thumb';
+  const img = document.getElementById(id);
+  if (url?.startsWith('http')) { img.src = url; img.classList.add('show'); }
+  else { img.classList.remove('show'); img.src = ''; }
+}
+
+// ══════════════════════════════════════════
+//  COLLAPSE
+// ══════════════════════════════════════════
+function toggleCollapse(name) {
+  const body = document.getElementById(`body-${name}`);
+  const chev = document.getElementById(`chev-${name}`);
+  body.classList.toggle('open');
+  chev.classList.toggle('open');
+}
+
+// ══════════════════════════════════════════
+//  MODALS
+// ══════════════════════════════════════════
+function showModal(id) { document.getElementById(id).style.display = 'flex'; }
+function closeModal(id){ document.getElementById(id).style.display = 'none'; }
+
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.style.display = 'none'; });
+});
+
+// ══════════════════════════════════════════
+//  TOAST
+// ══════════════════════════════════════════
+function toast(msg, type = 'info', duration = 3000) {
+  const container = document.getElementById('toast-container');
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = msg;
+  container.appendChild(el);
+  setTimeout(() => {
+    el.classList.add('out');
+    setTimeout(() => el.remove(), 350);
+  }, duration);
+}
+
+// ══════════════════════════════════════════
+//  UTILS
+// ══════════════════════════════════════════
+function v(id){ return (document.getElementById(id)?.value || '').trim(); }
+function esc(s){ const d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
+
+function updateCharCount(id) {
+  const el = document.getElementById(id);
+  const cc = document.getElementById(`cc-${id}`);
+  if (!el || !cc) return;
+  cc.textContent = `${el.value.length}/128`;
+  cc.style.color = el.value.length > 110 ? '#eab308' : '';
+}
+
+// Translations and Internationalization (i18n)
+const translations = {
+  ar: {
+    tab_rpc: 'الـ RPC',
+    tab_profiles: 'البروفايلات',
+    tab_bots: 'التوكنات',
+    tab_preview: 'المعاينة',
+    tab_settings: 'الإعدادات',
+    tab_about: 'حول',
+    preview_note: '* هذه معاينة تقريبية، مظهر ديسكورد الحقيقي قد يختلف قليلاً',
+    settings_title: 'إعدادات التطبيق',
+    settings_sub: 'تخصيص الخيارات، السلوك، واللغات',
+    card_language: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg> لغة التطبيق / Language',
+    lbl_select_lang: 'اختر اللغة المفضلة للواجهة',
+    card_system: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> سلوك التطبيق والنظام',
+    opt_autostart: 'التشغيل تلقائياً مع ويندوز',
+    opt_autostart_hint: 'بدء SentryRPC تلقائياً عند تسجيل الدخول',
+    opt_min_tray: 'التصغير لشريط المهام (Tray) عند الإغلاق',
+    opt_min_tray_hint: 'إبقاء التطبيق يعمل في الخلفية بدلاً من الإغلاق الكامل',
+    opt_start_min: 'التشغيل مصغراً',
+    opt_start_min_hint: 'بدء التطبيق مخفياً في شريط المهام فور التشغيل',
+    card_appearance: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path></svg> المظهر واللون الرئيسي',
+    lbl_accent_color: 'لون التمييز (Accent Color)',
+    about_desc: 'منصة احترافية متكاملة للتحكم في Discord Rich Presence وإدارة توكنات البوتات بأسلوب 3D Anime عصري ومميز.',
+    about_server_title: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg> مجتمع وسيرفر الدعم الفني',
+    about_server_desc: 'انضم إلى سيرفر الديسكورد الرسمي للحصول على التحديثات، الدعم الفني، والمشاركة في تطوير المشروع:',
+    btn_join_discord: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path></svg> الانضمام لسيرفر ديسكورد',
+    about_dev_title: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> المبرمج والمشروع',
+    lbl_developer: 'المبرمج:',
+    lbl_license: 'الترخيص:',
+    lbl_framework: 'التقنيات:',
+    lbl_security: 'الأمان:',
+    val_security: 'تشفير محلي 100% بدون خوادم خارجية',
+    rotator_card_title: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg> الـ RPC المتحرك والحي (Dynamic Rotator)',
+    rotator_toggle: 'تفعيل الـ RPC المتحرك المتغير',
+    rotator_toggle_hint: 'التنقل التلقائي بين فريمات ومشاهد RPC مخصصة',
+    metrics_toggle: 'عرض مواصفات الجهاز حياً (Live Hardware Monitor)',
+    metrics_toggle_hint: 'إظهار نسبة استهلاك المعالج (CPU) والرام (RAM) حياً في حالة ديسكورد',
+    rotator_interval_label: 'سرعة التنقل بين الفريمات',
+    rotator_preset_label: 'سيناريو متحرك جاهز',
+    frames_list_title: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg> فريمات المشهد المتحرك:',
+    btn_add_frame: '+ إضافة فريم جديد'
+  },
+  en: {
+    tab_rpc: 'RPC',
+    tab_profiles: 'Profiles',
+    tab_bots: 'Bot Tokens',
+    tab_preview: 'Preview',
+    tab_settings: 'Settings',
+    tab_about: 'About',
+    preview_note: '* Approximate preview. Actual Discord appearance may vary.',
+    settings_title: 'Application Settings',
+    settings_sub: 'Customize options, behavior, and languages',
+    card_language: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg> Language Settings',
+    lbl_select_lang: 'Select your preferred interface language',
+    card_system: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> App & System Behavior',
+    opt_autostart: 'Start with Windows',
+    opt_autostart_hint: 'Automatically launch SentryRPC on system boot',
+    opt_min_tray: 'Minimize to Tray on Close',
+    opt_min_tray_hint: 'Keep application running in background when closing',
+    opt_start_min: 'Start Minimized',
+    opt_start_min_hint: 'Launch app hidden in system tray',
+    card_appearance: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path></svg> Theme & Accent Color',
+    lbl_accent_color: 'Accent Color',
+    about_desc: 'Comprehensive professional suite for Discord Rich Presence & Bot profile management with a sleek 3D Anime aesthetic.',
+    about_server_title: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg> Official Community & Support',
+    about_server_desc: 'Join our official Discord server for updates, support, and community discussions:',
+    btn_join_discord: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path></svg> Join Discord Server',
+    about_dev_title: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> Developer & Project',
+    lbl_developer: 'Developer:',
+    lbl_license: 'License:',
+    lbl_framework: 'Framework:',
+    lbl_security: 'Security:',
+    val_security: '100% Local Encryption without external servers',
+    rotator_card_title: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg> Dynamic Animated RPC Rotator',
+    rotator_toggle: 'Enable Dynamic Animated RPC',
+    rotator_toggle_hint: 'Automatically cycle through custom RPC scenes & frames',
+    metrics_toggle: 'Live Hardware Monitor (CPU & RAM)',
+    metrics_toggle_hint: 'Show live system CPU load and RAM usage in Discord status',
+    rotator_interval_label: 'Frame Switch Speed',
+    rotator_preset_label: 'Pre-made Animated Scenario',
+    frames_list_title: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg> Scene Animated Frames:',
+    btn_add_frame: '+ Add New Frame'
+  }
+};
+
+let currentSettings = {
+  language: 'ar',
+  autoStart: false,
+  minimizeToTray: true,
+  startMinimized: false,
+  accentColor: '#06b6d4'
+};
+
+function changeLanguage(lang) {
+  currentSettings.language = lang;
+  applyLanguage(lang);
+  saveCurrentSettings();
+}
+
+function applyLanguage(lang) {
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+  
+  const dict = translations[lang] || translations.ar;
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (dict[key]) {
+      el.innerHTML = dict[key];
+    }
+  });
+
+  const arBtn = document.getElementById('lang-ar-btn');
+  const enBtn = document.getElementById('lang-en-btn');
+  if (arBtn && enBtn) {
+    if (lang === 'ar') {
+      arBtn.style.borderColor = 'var(--accent)';
+      arBtn.style.color = 'var(--accent2)';
+      enBtn.style.borderColor = '';
+      enBtn.style.color = '';
+    } else {
+      enBtn.style.borderColor = 'var(--accent)';
+      enBtn.style.color = 'var(--accent2)';
+      arBtn.style.borderColor = '';
+      arBtn.style.color = '';
+    }
+  }
+}
+
+function setAccentColor(color) {
+  currentSettings.accentColor = color;
+  document.documentElement.style.setProperty('--accent', color);
+  document.documentElement.style.setProperty('--accent2', color);
+  saveCurrentSettings();
+  
+  document.querySelectorAll('.color-dot').forEach(dot => {
+    const bg = dot.style.backgroundColor || dot.style.background;
+    dot.classList.toggle('active', bg === color || bg.includes(color));
+  });
+}
+
+async function loadCurrentSettings() {
+  if (!window.rpc?.loadSettings) return;
+  const s = await window.rpc.loadSettings();
+  if (s) {
+    currentSettings = { ...currentSettings, ...s };
+  }
+  
+  const autoStartEl = document.getElementById('setting-autostart');
+  const minTrayEl = document.getElementById('setting-min-tray');
+  const startMinEl = document.getElementById('setting-start-min');
+  
+  if (autoStartEl) autoStartEl.checked = !!currentSettings.autoStart;
+  if (minTrayEl) minTrayEl.checked = !!currentSettings.minimizeToTray;
+  if (startMinEl) startMinEl.checked = !!currentSettings.startMinimized;
+  
+  if (currentSettings.accentColor) {
+    setAccentColor(currentSettings.accentColor);
+  }
+  
+  applyLanguage(currentSettings.language || 'ar');
+}
+
+async function saveCurrentSettings() {
+  const autoStartEl = document.getElementById('setting-autostart');
+  const minTrayEl = document.getElementById('setting-min-tray');
+  const startMinEl = document.getElementById('setting-start-min');
+  
+  if (autoStartEl) currentSettings.autoStart = autoStartEl.checked;
+  if (minTrayEl) currentSettings.minimizeToTray = minTrayEl.checked;
+  if (startMinEl) currentSettings.startMinimized = startMinEl.checked;
+  
+  if (window.rpc?.saveSettings) {
+    await window.rpc.saveSettings(currentSettings);
+  }
+}
+
+// Rotator Engine Handlers
+function toggleRotatorUI() {
+  const enabled = document.getElementById('rotationEnabled')?.checked;
+  const area = document.getElementById('rotator-settings-area');
+  if (area) area.style.display = enabled ? 'block' : 'none';
+}
+
+function renderRotatorFrames() {
+  const container = document.getElementById('rotator-frames-list');
+  if (!container) return;
+  
+  if (rotatorFramesList.length === 0) {
+    container.innerHTML = `<div style="font-size:11px;color:var(--muted);text-align:center;padding:10px;background:var(--surface3);border-radius:6px">لا توجد فريمات متحركة بعد. اضغط «إضافة فريم جديد» أو اختر سيناريو جاهز.</div>`;
+    return;
+  }
+
+  container.innerHTML = rotatorFramesList.map((f, i) => `
+    <div class="rotator-frame-item">
+      <div class="rotator-frame-info">
+        <div class="rotator-frame-title">فريم ${i + 1}: ${esc(f.name || f.details || 'فريم بدون عنوان')}</div>
+        <div class="rotator-frame-sub">${esc(f.details || '—')} | ${esc(f.state || '—')}</div>
+      </div>
+      <div class="rotator-frame-actions">
+        <button class="btn-sm" onclick="editFrame(${i})" title="تعديل"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg></button>
+        <button class="btn-sm btn-3d-red" onclick="deleteFrame(${i})" title="حذف"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openAddFrameModal() {
+  document.getElementById('frame-modal-title').innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg> إضافة فريم متحرك جديد';
+  document.getElementById('frame-edit-index').value = '-1';
+  document.getElementById('frame-name-input').value = '';
+  document.getElementById('frame-details-input').value = '';
+  document.getElementById('frame-state-input').value = '';
+  document.getElementById('frame-large-img-input').value = '';
+  document.getElementById('frame-small-img-input').value = '';
+  showModal('modal-frame');
+}
+
+function editFrame(index) {
+  const f = rotatorFramesList[index];
+  if (!f) return;
+  document.getElementById('frame-modal-title').textContent = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg> تعديل الفريم ${index + 1}`;
+  document.getElementById('frame-edit-index').value = index;
+  document.getElementById('frame-name-input').value = f.name || '';
+  document.getElementById('frame-details-input').value = f.details || '';
+  document.getElementById('frame-state-input').value = f.state || '';
+  document.getElementById('frame-large-img-input').value = f.largeImageKey || '';
+  document.getElementById('frame-small-img-input').value = f.smallImageKey || '';
+  showModal('modal-frame');
+}
+
+function deleteFrame(index) {
+  rotatorFramesList.splice(index, 1);
+  renderRotatorFrames();
+  debouncedAutoSave(true);
+  toast('<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg> تم حذف الفريم', 'info');
+}
+
+function saveFrameFromModal() {
+  const index = parseInt(document.getElementById('frame-edit-index').value);
+  const frameObj = {
+    name: v('frame-name-input'),
+    details: v('frame-details-input'),
+    state: v('frame-state-input'),
+    largeImageKey: v('frame-large-img-input'),
+    smallImageKey: v('frame-small-img-input')
+  };
+
+  if (index >= 0 && index < rotatorFramesList.length) {
+    rotatorFramesList[index] = frameObj;
+    toast('✅ تم تحديث الفريم', 'success');
+  } else {
+    rotatorFramesList.push(frameObj);
+    toast('✅ تم إضافة الفريم', 'success');
+  }
+
+  closeModal('modal-frame');
+  renderRotatorFrames();
+  debouncedAutoSave(true);
+}
+
+function applyRotatorScenario(key) {
+  if (!key) return;
+  document.getElementById('rotationEnabled').checked = true;
+  toggleRotatorUI();
+
+  if (key === 'streamer') {
+    rotatorFramesList = [
+      { name: '<span class="status-dot" style="background:var(--color-error, #ef4444); display:inline-block; margin-left:4px;"></span> بث حي تويتش', details: '<span class="status-dot" style="background:var(--color-error, #ef4444); display:inline-block; margin-left:4px;"></span> Live Streaming Twitch', state: 'Playing GTA V RP', largeImageKey: 'twitch', smallImageKey: 'live' },
+      { name: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><rect x="2" y="6" width="20" height="12" rx="2"></rect><line x1="6" y1="12" x2="10" y2="12"></line><line x1="8" y1="10" x2="8" y2="14"></line><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg> سيرفر FiveM', details: 'City RP - Server #1', state: 'Online: 120/128', largeImageKey: 'gtav', smallImageKey: 'discord' },
+      { name: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg> الروم الصوتي', details: 'Sentry KSA Voice Chat', state: 'Chilling with Squad', largeImageKey: 'discord', smallImageKey: 'mic' }
+    ];
+  } else if (key === 'developer') {
+    rotatorFramesList = [
+      { name: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg> VS Code Studio', details: 'Developing نامل', state: 'Workspace: Main Project', largeImageKey: 'vscode', smallImageKey: 'git' },
+      { name: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path></svg> Photoshop Design', details: 'Creating 3D Anime UI', state: 'Editing Logo.psd', largeImageKey: 'photoshop', smallImageKey: 'paint' },
+      { name: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> GitHub Push', details: 'Open Source Repository', state: 'Branch: main (Clean Build)', largeImageKey: 'github', smallImageKey: 'check' }
+    ];
+  } else if (key === 'music') {
+    rotatorFramesList = [
+      { name: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg> Spotify Track #1', details: 'Listening to Lofi Anime Beats', state: 'Artist: ChilledCow', largeImageKey: 'spotify', smallImageKey: 'music' },
+      { name: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M3 18v-6a9 9 0 0 1 18 0v6"></path><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path></svg> Playlist Vibe', details: 'Night Drive Synthwave', state: '02:45 / 04:12', largeImageKey: 'spotify', smallImageKey: 'play' },
+      { name: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="12" x2="6" y2="4"></line><line x1="10" y1="12" x2="10" y2="4"></line><line x1="14" y1="12" x2="14" y2="4"></line></svg> Rest Time', details: 'Taking a Coffee Break <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="12" x2="6" y2="4"></line><line x1="10" y1="12" x2="10" y2="4"></line><line x1="14" y1="12" x2="14" y2="4"></line></svg>', state: 'AFK for 10 mins', largeImageKey: 'coffee', smallImageKey: 'smile' }
+    ];
+  } else if (key === 'cyberpunk') {
+    rotatorFramesList = [
+      { name: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> Cyberpunk 2077', details: 'Exploring Night City', state: 'Level 50 - Street Kid', largeImageKey: 'cyberpunk', smallImageKey: 'star' },
+      { name: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path><circle cx="12" cy="12" r="3"></circle></svg> Anime Vibe', details: 'SentryRPC Anime Edition', state: 'Status: Overpowered ✨', largeImageKey: 'anime', smallImageKey: 'sparkles' }
+    ];
+  }
+
+  renderRotatorFrames();
+  debouncedAutoSave(true);
+  toast('✨ تم تطبيق السيناريو المتحرك بنجاح', 'success');
+}
+
+async function handleCheckUpdates() {
+  const btn = document.getElementById('btn-check-updates');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> جاري الفحص...';
+  }
+  try {
+    const res = await window.rpc.checkForUpdates();
+    if (res?.isLatest) {
+      toast('✅ أنت على أحدث إصدار (' + res.currentVersion + ')', 'success');
+      const title = document.getElementById('update-status-title');
+      const sub = document.getElementById('update-status-sub');
+      if (title) title.textContent = 'أنت تستخدم أحدث إصدار مستقر (v' + res.currentVersion + ')';
+      if (sub) sub.textContent = 'تم التحقق بنجاح — لا توجد تحديثات معلقة';
+    } else {
+      toast('🚀 يوجد تحديث جديد متوفر (' + res.latestVersion + ')', 'info');
+    }
+  } catch (e) {
+    toast('⚠️ تعذر فحص التحديثات حالياً', 'error');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> <span>فحص التحديثات</span>';
+    }
+  }
+}
+
+async function handleQuickDiscordCheck() {
+  try {
+    const isRunning = await window.rpc.checkDiscordProcess();
+    const dot = document.getElementById('discord-dot');
+    const txt = document.getElementById('discord-text');
+    if (dot && txt) {
+      if (isRunning) {
+        dot.style.background = '#22c55e';
+        txt.style.color = '#22c55e';
+        txt.textContent = 'ديسكورد متصل';
+      } else {
+        dot.style.background = '#ef4444';
+        txt.style.color = '#ef4444';
+        txt.textContent = 'ديسكورد مغلق';
+      }
+    }
+    return isRunning;
+  } catch (e) {
+    return false;
+  }
+}
+
+async function handleSelfRepair() {
+  toast('⏳ جاري فحص وإصلاح التطبيق...', 'info');
+  try {
+    const report = await window.rpc.selfRepair();
+    const container = document.getElementById('repair-steps-container');
+    if (container && report.steps) {
+      container.innerHTML = report.steps.map(s => `
+        <div style="background:var(--surface);border:1px solid var(--border);border-right:3px solid ${s.ok ? 'var(--green)' : 'var(--color-error)'};border-radius:6px;padding:8px 12px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;">
+            <div style="font-weight:700;font-size:12px;color:${s.ok ? 'var(--green)' : 'var(--color-error)'}">${s.ok ? '✅' : '❌'} ${esc(s.name)}</div>
+          </div>
+          <div style="font-size:11px;color:var(--muted);">${esc(s.detail)}</div>
+        </div>
+      `).join('');
+    }
+    showModal('modal-repair');
+    handleQuickDiscordCheck();
+    toast(report.success ? '✅ اكتمل الفحص والإصلاح بنجاح' : '⚠️ تم الإصلاح مع وجود تنبيهات', report.success ? 'success' : 'info');
+  } catch (e) {
+    toast('❌ حدث خطأ أثناء عملية الإصلاح: ' + e.message, 'error');
+  }
+}
+
+async function handleExportBackup() {
+  try {
+    const res = await window.rpc.exportBackup();
+    if (res?.success) {
+      toast('✅ تم تصدير النسخة الاحتياطية بنجاح', 'success');
+    } else if (!res?.canceled) {
+      toast('❌ فشل التصدير: ' + (res?.error || 'خطأ غير معروف'), 'error');
+    }
+  } catch (e) {
+    toast('❌ تعذر تصدير النسخة الاحتياطية', 'error');
+  }
+}
+
+async function handleImportBackup() {
+  try {
+    const res = await window.rpc.importBackup();
+    if (res?.success) {
+      if (res.config) applyConfigToForm(res.config);
+      if (res.profiles) {
+        profiles = res.profiles;
+        renderProfiles();
+      }
+      if (res.settings) await loadCurrentSettings();
+      updatePreview();
+      toast('✅ تم استيراد النسخة الاحتياطية وتحديث الواجهة بنجاح', 'success');
+    } else if (!res?.canceled) {
+      toast('❌ فشل الاستيراد: ' + (res?.error || 'ملف غير صالح'), 'error');
+    }
+  } catch (e) {
+    toast('❌ تعذر استيراد النسخة الاحتياطية', 'error');
+  }
+}
+
+async function handleSecureDownload() {
+  const urlInput = document.getElementById('custom-download-url');
+  const url = (urlInput?.value || '').trim();
+  if (!url) {
+    toast('⚠️ يُرجى إدخال رابط التحميل أولاً', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('btn-secure-download');
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> جاري التحميل...';
+  }
+
+  try {
+    const res = await window.rpc.secureDownload(url);
+    if (res?.success) {
+      toast('✅ تم تحميل الملف بأمان: ' + res.fileName, 'success');
+      if (res.fileName.endsWith('.json')) {
+        toast('💡 تم حفظ الملف في مجلد التنزيلات الخاص بالتطبيق', 'info');
+      }
+    } else {
+      toast('❌ ' + (res?.error || 'فشل التحميل الآمن'), 'error');
+    }
+  } catch (e) {
+    toast('❌ خطأ في التحميل: ' + e.message, 'error');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> تحميل وتثبيت';
+    }
+  }
+}
+

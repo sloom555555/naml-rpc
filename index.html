@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>نامل</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="style.min.css"/>
+<style>
+/* ── Discord Profile & Account Bar Enhancements ── */
+.discord-account-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 380px;
+  background: var(--surface2, #141726);
+  border: 1px solid var(--border, rgba(255,255,255,0.08));
+  border-radius: 12px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+.dab-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.dab-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #64748b;
+  flex-shrink: 0;
+  transition: background 0.3s ease;
+}
+.dab-dot.online {
+  background: #22c55e;
+  box-shadow: 0 0 8px rgba(34,197,94,0.6);
+}
+.dab-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.dab-title {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text, #f8fafc);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dab-id {
+  font-size: 10px;
+  color: var(--muted, #94a3b8);
+  font-family: monospace;
+}
+.dab-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.dab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--surface3, #1e2238);
+  border: 1px solid var(--border, rgba(255,255,255,0.1));
+  color: var(--text, #e2e8f0);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.dab-btn:hover {
+  background: rgba(255,255,255,0.1);
+  transform: translateY(-1px);
+}
+.dab-btn-sync:hover svg {
+  transform: rotate(180deg);
+  transition: transform 0.4s ease;
+}
+.dc-avatar-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-top: -38px;
+  margin-bottom: 8px;
+  padding: 0 4px;
+}
+.dc-avatar-wrap {
+  position: relative;
+}
+.dc-avatar {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  border: 5px solid #111214;
+  background: #111214;
+}
+.dc-avatar img#pv-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+.dc-avatar-decor {
+  position: absolute;
+  top: -12%;
+  left: -12%;
+  width: 124%;
+  height: 124%;
+  pointer-events: none;
+  z-index: 2;
+}
+.dc-online-badge {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #23a55a;
+  border: 3.5px solid #111214;
+  z-index: 3;
+}
+.dc-badges {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 4px 8px;
+  max-width: fit-content;
+  backdrop-filter: blur(4px);
+}
+.dc-badge-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+.dc-badge-chip:hover {
+  transform: scale(1.2);
+  filter: brightness(1.2);
+}
+.dc-badge-chip svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+.dc-user-header {
+  margin-top: 4px;
+  margin-bottom: 8px;
+}
+.dc-globalname {
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1.2;
+}
+.dc-username {
+  font-size: 13px;
+  color: #b5bac1;
+  font-weight: 500;
+  margin-top: 2px;
+}
+.autosave-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 5px 10px;
+  border-radius: 8px;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.28);
+  color: #4ade80;
+  transition: all 0.25s ease;
+  user-select: none;
+  white-space: nowrap;
+}
+.autosave-indicator.saving {
+  background: rgba(99, 102, 241, 0.12);
+  border-color: rgba(99, 102, 241, 0.3);
+  color: #818cf8;
+}
+.autosave-indicator.error {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #f87171;
+}
+.save-spinner {
+  width: 10px;
+  height: 10px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+}
+.save-check {
+  font-size: 12px;
+  font-weight: 800;
+}
+</style>
+</head>
+<body>
+
+<!-- ══ TITLEBAR ══ -->
+<div id="titlebar">
+  <div class="tl-left">
+    <div class="tl-logo">
+      <img src="assets/naml-logo.png" style="width:30px;height:30px;object-fit:contain;"/>
+      <span>نامل</span>
+    </div>
+  </div>
+  <div class="tl-center">
+    <div class="tl-status off" id="tl-status">
+      <span class="status-dot"></span>
+      <span id="tl-status-text">غير نشط</span>
+    </div>
+  </div>
+  <div class="tl-right">
+    <div class="tl-discord-status" id="tl-discord" title="حالة تطبيق ديسكورد (اضغط للفحص السريع)" style="font-size:11px;display:flex;align-items:center;gap:5px;cursor:pointer;background:var(--surface2);padding:3px 8px;border-radius:12px;border:1px solid var(--border);" onclick="handleQuickDiscordCheck()">
+      <span class="status-dot" id="discord-dot" style="background:#64748b;width:7px;height:7px;border-radius:50%;display:inline-block;"></span>
+      <span id="discord-text" style="color:var(--muted);font-weight:600;">ديسكورد</span>
+    </div>
+    <div class="tl-elapsed" id="tl-elapsed" style="display:none">⏱ <span id="elapsed-text">0:00</span></div>
+  </div>
+</div>
+
+<!-- ══ TABS ══ -->
+<div id="tabs">
+  <button class="tab active" data-tab="rpc" onclick="switchTab('rpc')">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+    <span data-i18n="tab_rpc">الـ RPC</span>
+  </button>
+  <button class="tab" data-tab="profiles" onclick="switchTab('profiles')">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    <span data-i18n="tab_profiles">البروفايلات</span>
+  </button>
+  <button class="tab" data-tab="bots" onclick="switchTab('bots')">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+    <span data-i18n="tab_bots">التوكنات</span>
+  </button>
+  <button class="tab" data-tab="preview" onclick="switchTab('preview')">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+    <span data-i18n="tab_preview">المعاينة</span>
+  </button>
+  <button class="tab" data-tab="settings" onclick="switchTab('settings')">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+    <span data-i18n="tab_settings">الإعدادات</span>
+  </button>
+  <button class="tab" data-tab="about" onclick="switchTab('about')">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+    <span data-i18n="tab_about">حول</span>
+  </button>
+</div>
+
+<!-- ══ MAIN CONTENT ══ -->
+<div id="content">
+
+  <!-- ── TAB: RPC ── -->
+  <div class="tab-panel active" id="panel-rpc">
+    <!-- Action bar -->
+    <div class="action-bar">
+      <button class="btn-3d btn-start" id="btn-start" onclick="handleStart()" style="flex:1">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        تشغيل
+      </button>
+      <button class="btn-3d btn-3d-red" id="btn-stop" onclick="handleStop()" style="display:none;flex:1">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+        إيقاف
+      </button>
+      <button class="btn-3d btn-3d-blue" onclick="handleSaveConfig()" title="حفظ الإعدادات">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+      </button>
+      <button class="btn-3d btn-3d-purple" onclick="openSaveProfileModal()" title="حفظ كبروفايل جديد">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
+      <button class="btn-3d" onclick="handleSelfRepair()" title="إصلاح التطبيق وتشخيص الأعطال" style="background:rgba(245,158,11,0.15);color:#f59e0b;border:1px solid rgba(245,158,11,0.3);">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+      </button>
+      <div class="autosave-indicator saved" id="autosave-indicator" title="حالة الحفظ التلقائي الفوري">
+        <span class="save-check">✓</span>
+        <span class="save-text">محفوظ تلقائياً</span>
+      </div>
+    </div>
+
+    <div class="scroll-area">
+      <!-- Client ID -->
+      <div class="card">
+        <div class="card-title">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          معرّف التطبيق
+        </div>
+        <div class="field">
+          <label>Client ID / App ID</label>
+          <div class="input-row">
+            <input type="text" id="clientId" placeholder="1533169274401849414" oninput="debouncedPreview()"/>
+            <button class="btn-link" onclick="window.rpc.openExternal('https://discord.com/developers/applications')" title="فتح Developer Portal">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Details & State -->
+      <div class="card">
+        <div class="card-title">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          النص
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label>التفاصيل (Details)</label>
+            <input type="text" id="details" placeholder="ماذا تفعل الآن..." maxlength="128" oninput="debouncedPreview()"/>
+            <span class="char-count" id="cc-details">0/128</span>
+          </div>
+          <div class="field">
+            <label>الحالة (State)</label>
+            <input type="text" id="state" placeholder="تفاصيل إضافية..." maxlength="128" oninput="debouncedPreview()"/>
+            <span class="char-count" id="cc-state">0/128</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Images -->
+      <div class="card">
+        <div class="card-title">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          الصور
+        </div>
+        <!-- Large -->
+        <div class="field">
+          <label>الصورة الكبيرة</label>
+          <div class="img-row">
+            <img class="img-thumb" id="large-thumb" src="" alt=""/>
+            <input type="text" id="largeImageKey" placeholder="رابط أو مفتاح..." oninput="onImageKeyInput('large')"/>
+            <button class="btn-upload" onclick="document.getElementById('large-file').click()" title="رفع من جهازك">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </button>
+            <input type="file" id="large-file" accept="image/*" style="display:none" onchange="handleFileUpload(event,'large')"/>
+          </div>
+          <input type="text" id="largeImageText" placeholder="نص الصورة الكبيرة..." style="margin-top:6px" oninput="debouncedPreview()"/>
+        </div>
+        <!-- Small -->
+        <div class="field" style="margin-top:10px">
+          <label>الصورة الصغيرة</label>
+          <div class="img-row">
+            <img class="img-thumb" id="small-thumb" src="" alt=""/>
+            <input type="text" id="smallImageKey" placeholder="رابط أو مفتاح..." oninput="onImageKeyInput('small')"/>
+            <button class="btn-upload" onclick="document.getElementById('small-file').click()" title="رفع من جهازك">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </button>
+            <input type="file" id="small-file" accept="image/*" style="display:none" onchange="handleFileUpload(event,'small')"/>
+          </div>
+          <input type="text" id="smallImageText" placeholder="نص الصورة الصغيرة..." style="margin-top:6px" oninput="debouncedPreview()"/>
+        </div>
+      </div>
+
+      <!-- Buttons (Always visible) -->
+      <div class="card">
+        <div class="card-title">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+          الأزرار التفاعلية (Buttons)
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div class="row2">
+            <div class="field"><label>نص الزر 1</label><input type="text" id="button1Label" placeholder="زيارة الموقع" maxlength="32" oninput="debouncedPreview()"/></div>
+            <div class="field"><label>رابط الزر 1</label><input type="text" id="button1Url"  placeholder="https://..."/></div>
+          </div>
+          <div class="row2">
+            <div class="field"><label>نص الزر 2</label><input type="text" id="button2Label" placeholder="GitHub" maxlength="32" oninput="debouncedPreview()"/></div>
+            <div class="field"><label>رابط الزر 2</label><input type="text" id="button2Url"  placeholder="https://..."/></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Options (timestamp, party, advanced) -->
+      <div class="card">
+        <div class="card-title">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
+          خيارات متقدمة (Advanced)
+        </div>
+
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label">الوقت المنقضي (Elapsed Time)</div>
+            <div class="toggle-hint">يُظهر كم وقت شغّلت الـ RPC</div>
+          </div>
+          <label class="switch"><input type="checkbox" id="startTimestamp" checked onchange="debouncedPreview()"/><span class="slider"></span></label>
+        </div>
+        
+        <div class="field" style="margin-top:10px">
+          <label>الوقت المتبقي (Countdown in minutes)</label>
+          <input type="number" id="endTimestamp" placeholder="مثال: 60 (لـ 60 دقيقة)" min="1"/>
+        </div>
+
+        <div class="sep"></div>
+
+        <!-- Party (collapsible) -->
+        <div class="collapse-header" onclick="toggleCollapse('party')">
+          <span>المجموعة والفريق (Party Info)</span>
+          <svg class="chevron" id="chev-party" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="collapse-body" id="body-party">
+          <div class="row2" style="padding-top:10px">
+            <div class="field"><label>Party ID</label><input type="text" id="partyId" placeholder="123456"/></div>
+            <div class="field"><label>Instance</label>
+              <label class="switch" style="margin-top:4px"><input type="checkbox" id="instance"/><span class="slider"></span></label>
+            </div>
+          </div>
+          <div class="row2" style="margin-top:8px">
+            <div class="field"><label>الحجم الحالي</label><input type="number" id="partySize" placeholder="1" min="1"/></div>
+            <div class="field"><label>الحجم الأقصى</label><input type="number" id="partyMax"  placeholder="10" min="1"/></div>
+          </div>
+        </div>
+
+        <div class="sep"></div>
+
+        <!-- Secrets (collapsible) -->
+        <div class="collapse-header" onclick="toggleCollapse('secrets')">
+          <span>أكواد الانضمام (Secrets)</span>
+          <svg class="chevron" id="chev-secrets" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="collapse-body" id="body-secrets">
+          <div style="padding-top:10px;display:flex;flex-direction:column;gap:8px">
+            <div class="field"><label>Match Secret</label><input type="text" id="matchSecret" placeholder="Match secret key..."/></div>
+            <div class="field"><label>Join Secret</label><input type="text" id="joinSecret" placeholder="Join secret key..."/></div>
+            <div class="field"><label>Spectate Secret</label><input type="text" id="spectateSecret" placeholder="Spectate secret key..."/></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dynamic Animated RPC Rotator -->
+      <div class="card">
+        <div class="card-title">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+          <span data-i18n="rotator_card_title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path></svg> الـ RPC المتحرك والحي (Dynamic Rotator)</span>
+        </div>
+
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label" data-i18n="rotator_toggle">تفعيل الـ RPC المتحرك المتغير</div>
+            <div class="toggle-hint" data-i18n="rotator_toggle_hint">التنقل التلقائي بين فريمات ومشاهد RPC مخصصة</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="rotationEnabled" onchange="toggleRotatorUI()"/>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label" data-i18n="metrics_toggle">عرض مواصفات الجهاز حياً (Live Hardware Monitor)</div>
+            <div class="toggle-hint" data-i18n="metrics_toggle_hint">إظهار نسبة استهلاك المعالج (CPU) والرام (RAM) حياً في حالة ديسكورد</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="enableSystemMetrics" onchange="debouncedPreview()"/>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div id="rotator-settings-area" style="display:none;margin-top:12px">
+          <div class="row2">
+            <div class="field">
+              <label data-i18n="rotator_interval_label">سرعة التنقل بين الفريمات</label>
+              <select id="rotationInterval" style="background:var(--surface3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:13px;padding:8px 11px;width:100%;outline:none">
+                <option value="3"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> 3 ثواني (سريع جداً)</option>
+                <option value="5" selected><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> 5 ثواني (مثالي)</option>
+                <option value="10"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M3 11l2-2m-2 6l2 2m16-2l-2-2m2-4l-2 2M12 2v2m0 16v2M5.4 5.4l1.4 1.4M18.6 18.6l-1.4-1.4m0-11.8l1.4-1.4M6.8 18.6l-1.4-1.4"></path></svg> 10 ثواني (مستقر)</option>
+                <option value="15"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M5 22h14"></path><path d="M5 2h14"></path><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"></path><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"></path></svg> 15 ثانية (هادئ)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label data-i18n="rotator_preset_label">سيناريو متحرك جاهز</label>
+              <select id="rotatorPresetSelect" onchange="applyRotatorScenario(this.value)" style="background:var(--surface3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:13px;padding:8px 11px;width:100%;outline:none">
+                <option value="">-- اختر سيناريو متحرك --</option>
+                <option value="streamer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><rect x="2" y="6" width="20" height="12" rx="2"></rect><line x1="6" y1="12" x2="10" y2="12"></line><line x1="8" y1="10" x2="8" y2="14"></line><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg> Streamer & Gamer Mode</option>
+                <option value="developer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg> Developer Suite & Code</option>
+                <option value="music"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M3 18v-6a9 9 0 0 1 18 0v6"></path><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path></svg> Chill Music Playlist</option>
+                <option value="cyberpunk"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> Cyberpunk Anime Vibe</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;margin-bottom:8px">
+            <span style="font-size:12px;font-weight:800;color:var(--accent2)" data-i18n="frames_list_title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg> فريمات المشهد المتحرك:</span>
+            <button class="btn-sm btn-3d-purple" onclick="openAddFrameModal()" data-i18n="btn_add_frame">+ إضافة فريم جديد</button>
+          </div>
+
+          <div id="rotator-frames-list" style="display:flex;flex-direction:column;gap:6px"></div>
+        </div>
+      </div>
+
+      <div style="height:16px"></div>
+    </div>
+  </div>
+
+  <!-- ── TAB: PROFILES ── -->
+  <div class="tab-panel" id="panel-profiles">
+    <div class="scroll-area">
+      <div class="section-header">
+        <div>
+          <div class="section-title">بروفايلاتك المحفوظة</div>
+          <div class="section-sub">كل بروفايل هو إعداد RPC كامل يمكنك تحميله بنقرة</div>
+        </div>
+        <button class="btn-accent" onclick="openSaveProfileModal()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          إضافة
+        </button>
+      </div>
+      <div id="profiles-list" class="items-list"></div>
+      <div id="profiles-empty" class="empty-state" style="display:none">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+        <p>لا توجد بروفايلات محفوظة بعد</p>
+        <span>اضغط «إضافة» لحفظ الإعدادات الحالية كبروفايل</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TAB: BOTS ── -->
+  <div class="tab-panel" id="panel-bots">
+    <div class="scroll-area">
+      <div class="section-header">
+        <div>
+          <div class="section-title">إدارة البوتات</div>
+          <div class="section-sub">أضف توكنات بوتاتك وخصّص ملفاتها مباشرة</div>
+        </div>
+        <button class="btn-3d btn-3d-purple" onclick="openAddBotModal()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          إضافة بوت
+        </button>
+      </div>
+
+      <div id="bots-list" class="items-list"></div>
+      <div id="bots-empty" class="empty-state" style="display:none">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/><circle cx="12" cy="16" r="1"/></svg>
+        <p>لا توجد توكنات محفوظة</p>
+        <span>أضف توكن بوتك لتخصيصه من هنا</span>
+      </div>
+
+      <!-- Bot Customizer Panel -->
+      <div id="bot-customizer" style="display:none">
+        <!-- Bot Profile Card -->
+        <div class="bot-profile-card">
+          <div class="bot-profile-banner" id="bc-banner-bg">
+            <button class="bc-banner-btn" onclick="document.getElementById('bc-banner-file').click()" title="تغيير البنر">تغيير البنر <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg></button>
+            <input type="file" id="bc-banner-file" accept="image/*" style="display:none" onchange="handleBotBannerFile(event)"/>
+          </div>
+          <div class="bot-profile-body">
+            <div class="bot-av-edit-wrap">
+              <img id="bc-avatar" src="" alt="" class="bc-avatar"/>
+              <button class="bc-av-btn" onclick="document.getElementById('bc-avatar-file').click()" title="تغيير الصورة"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg></button>
+              <input type="file" id="bc-avatar-file" accept="image/*" style="display:none" onchange="handleBotAvatarFile(event)"/>
+            </div>
+            <div class="bot-profile-info">
+              <div class="bot-profile-name" id="bc-display-name">Bot Name</div>
+              <div class="bot-profile-tag" id="bc-display-tag">#0000</div>
+              <div class="bot-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><rect x="3" y="11" width="18" height="10" rx="2"></rect><circle cx="12" cy="5" r="2"></circle><path d="M12 7v4"></path><line x1="8" y1="16" x2="8" y2="16"></line><line x1="16" y1="16" x2="16" y2="16"></line></svg> BOT</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Edit Fields -->
+        <div class="card" style="margin-top:10px">
+          <div class="card-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg> تعديل الملف الشخصي</div>
+          <div class="field">
+            <label>اسم المستخدم (Username)</label>
+            <input type="text" id="bc-username" placeholder="BotName" maxlength="32"/>
+          </div>
+          <div class="field" style="margin-top:8px">
+            <label>البايو / الوصف</label>
+            <textarea id="bc-bio" rows="3" placeholder="وصف البوت..." maxlength="190"></textarea>
+            <span class="char-count" id="bc-bio-count">0/190</span>
+          </div>
+          <button class="btn-3d btn-3d-blue" style="margin-top:10px;width:100%" onclick="updateBotProfile()">
+            <span id="bc-save-txt"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> حفظ التغييرات</span>
+          </button>
+        </div>
+
+        <!-- Status -->
+        <div class="card" style="margin-top:10px">
+          <div class="card-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg> الحالة والنشاط</div>
+          <div class="status-pills" id="bc-status-pills">
+            <button class="status-pill active" data-status="online"  onclick="setStatusPill('online')"><span class="status-dot" style="background:var(--color-success, #22c55e); display:inline-block; margin-left:4px;"></span> متصل</button>
+            <button class="status-pill"        data-status="idle"    onclick="setStatusPill('idle')"><span class="status-dot" style="background:var(--color-warning, #eab308); display:inline-block; margin-left:4px;"></span> بعيد</button>
+            <button class="status-pill"        data-status="dnd"     onclick="setStatusPill('dnd')"><span class="status-dot" style="background:var(--color-error, #ef4444); display:inline-block; margin-left:4px;"></span> مشغول</button>
+            <button class="status-pill"        data-status="invisible" onclick="setStatusPill('invisible')"><span class="status-dot" style="background:var(--color-muted, #71717a); display:inline-block; margin-left:4px;"></span> مخفي</button>
+          </div>
+          <div class="row2" style="margin-top:10px">
+            <div class="field">
+              <label>نوع النشاط</label>
+              <select id="bc-activity-type" onchange="toggleBotStreamUrl(this.value)" style="background:var(--surface3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:13px;padding:8px 11px;width:100%;outline:none">
+                <option value="0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><rect x="2" y="6" width="20" height="12" rx="2"></rect><line x1="6" y1="12" x2="10" y2="12"></line><line x1="8" y1="10" x2="8" y2="14"></line><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg> يلعب (Playing)</option>
+                <option value="1"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg> يبث (Streaming)</option>
+                <option value="2"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg> يستمع (Listening)</option>
+                <option value="3"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><rect x="2" y="7" width="20" height="15" rx="2" ry="2"></rect><polyline points="17 2 12 7 7 2"></polyline></svg> يشاهد (Watching)</option>
+                <option value="5"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M8 21h8"></path><path d="M12 17v4"></path><path d="M7 4h10v6a5 5 0 0 1-10 0V4Z"></path><path d="M7 4H3v3a5 5 0 0 0 5 5h1"></path></svg> يتنافس (Competing)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>نص النشاط</label>
+              <input type="text" id="bc-activity-name" placeholder="اسم اللعبة / النشاط..."/>
+            </div>
+          </div>
+          
+          <div class="field" id="bc-stream-field" style="display:none;margin-top:8px">
+            <label>رابط البث (Twitch / YouTube URL)</label>
+            <input type="text" id="bc-stream-url" placeholder="https://twitch.tv/..." value="https://twitch.tv/discord"/>
+          </div>
+
+          <button class="btn-3d btn-3d-green" style="margin-top:10px;width:100%" onclick="updateBotStatus()">
+            <span id="bc-status-txt"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M4 11a9 9 0 0 1 9 9"></path><path d="M4 4a16 16 0 0 1 16 16"></path><circle cx="5" cy="19" r="1"></circle></svg> تطبيق الحالة</span>
+          </button>
+        </div>
+
+        <!-- ── Bot Info / Servers ── -->
+        <div class="card" style="margin-top:10px">
+          <div class="card-title" style="justify-content:space-between">
+            <span style="display:flex;align-items:center;gap:6px">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+              السيرفرات
+            </span>
+            <button class="btn-sm" onclick="loadBotGuilds()" title="تحديث">↻</button>
+          </div>
+          <div id="bc-guilds-stats" class="guilds-stats" style="display:none">
+            <div class="stat-chip" id="bc-guild-count">0 سيرفر</div>
+            <div class="stat-chip" id="bc-member-est">— عضو تقريباً</div>
+          </div>
+          <div id="bc-guilds-list" class="guilds-list">
+            <div class="guilds-placeholder">اضغط ↻ لتحميل السيرفرات</div>
+          </div>
+        </div>
+
+        <!-- ── Send Message ── -->
+        <div class="card" style="margin-top:10px">
+          <div class="card-title">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            إرسال رسالة
+          </div>
+
+          <!-- Type Toggle -->
+          <div class="msg-type-tabs">
+            <button class="msg-tab active" id="msgt-dm"      onclick="setMsgType('dm')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg> خاص (DM)</button>
+            <button class="msg-tab"        id="msgt-channel" onclick="setMsgType('channel')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M11 20h2"></path><path d="M4 14a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3l5-4v16l-5-4H4z"></path><path d="M15 8.5a4 4 0 0 1 0 7"></path></svg> روم / قناة</button>
+          </div>
+
+          <div class="field" style="margin-top:10px">
+            <label id="msg-target-label">معرّف المستخدم (User ID)</label>
+            <input type="text" id="msg-target" placeholder="123456789012345678"/>
+          </div>
+
+          <div class="field" style="margin-top:8px">
+            <label>الرسالة</label>
+            <textarea id="msg-content" rows="3" placeholder="اكتب رسالتك هنا..." maxlength="2000"
+              style="background:var(--surface3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:13px;padding:8px 11px;width:100%;outline:none;resize:none"></textarea>
+            <span class="char-count" id="msg-cc">0/2000</span>
+          </div>
+
+          <!-- Embed toggle -->
+          <div class="toggle-row" style="margin-top:6px">
+            <div>
+              <div class="toggle-label">إرسال كـ Embed</div>
+              <div class="toggle-hint">رسالة ملونة داخل بطاقة</div>
+            </div>
+            <label class="switch"><input type="checkbox" id="msg-embed-toggle" onchange="toggleEmbedFields()"/><span class="slider"></span></label>
+          </div>
+
+          <!-- Embed fields (hidden by default) -->
+          <div id="embed-fields" style="display:none;margin-top:10px;flex-direction:column;gap:8px">
+            <div class="row2">
+              <div class="field"><label>عنوان الـ Embed</label><input type="text" id="embed-title" placeholder="العنوان..." maxlength="256"/></div>
+              <div class="field"><label>لون (Hex)</label><input type="text" id="embed-color" placeholder="#6366f1" maxlength="7"/></div>
+            </div>
+            <div class="field"><label>وصف الـ Embed</label><textarea id="embed-desc" rows="2" placeholder="النص الرئيسي..." style="background:var(--surface3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:13px;padding:8px 11px;width:100%;outline:none;resize:none"></textarea></div>
+            <div class="row2">
+              <div class="field"><label>اسم الكاتب (Author)</label><input type="text" id="embed-author" placeholder="الاسم..."/></div>
+              <div class="field"><label>صورة الكاتب (URL)</label><input type="text" id="embed-author-icon" placeholder="https://..."/></div>
+            </div>
+            <div class="row2">
+              <div class="field"><label>نص الفوتر (Footer)</label><input type="text" id="embed-footer" placeholder="تذييل..."/></div>
+              <div class="field"><label>صورة الفوتر (URL)</label><input type="text" id="embed-footer-icon" placeholder="https://..."/></div>
+            </div>
+            <div class="row2">
+              <div class="field"><label>رابط الصورة الكبيرة</label><input type="text" id="embed-img" placeholder="https://..."/></div>
+              <div class="field"><label>الصورة الجانبية (Thumbnail)</label><input type="text" id="embed-thumb" placeholder="https://..."/></div>
+            </div>
+          </div>
+
+          <button class="btn-3d btn-3d-purple" style="margin-top:12px;width:100%" onclick="sendBotMessage()">
+            <span id="msg-send-txt">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              إرسال
+            </span>
+          </button>
+          <div id="msg-result" class="msg-result" style="display:none"></div>
+        </div>
+
+        <div style="height:16px"></div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <!-- ── TAB: PREVIEW ── -->
+  <div class="tab-panel" id="panel-preview">
+    <div class="scroll-area" style="align-items:center">
+      <div class="preview-label">معاينة حية لما يظهر في ديسكورد</div>
+
+      <!-- Live Account Sync Bar -->
+      <div class="discord-account-bar" id="discord-account-bar">
+        <div class="dab-left">
+          <span class="dab-dot" id="dab-dot"></span>
+          <div class="dab-info">
+            <span class="dab-title" id="dab-account-info">جاري فحص اتصال ديسكورد...</span>
+            <span class="dab-id" id="dab-user-id" style="display:none;"></span>
+          </div>
+        </div>
+        <div class="dab-actions">
+          <button class="dab-btn" id="btn-copy-user-id" onclick="handleCopyDiscordUserId()" title="نسخ معرف الحساب (User ID)">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            نسخ الـ ID
+          </button>
+          <button class="dab-btn dab-btn-sync" id="btn-sync-discord" onclick="handleRefreshDiscordUser()" title="مزامنة الحساب فورياً من ديسكورد">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            تحديث الحساب
+          </button>
+        </div>
+      </div>
+
+      <!-- Discord-style profile card -->
+      <div class="discord-card">
+        <div class="dc-banner"></div>
+        <div class="dc-body">
+          <div class="dc-avatar-row">
+            <div class="dc-avatar-wrap">
+              <div class="dc-avatar">
+                <img id="pv-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" alt=""/>
+                <img id="pv-avatar-decor" class="dc-avatar-decor" src="" alt="" style="display:none;"/>
+              </div>
+              <div class="dc-online-badge"></div>
+            </div>
+            <div class="dc-badges" id="pv-badges" style="display:none;"></div>
+          </div>
+          <div class="dc-user-header">
+            <div class="dc-globalname" id="pv-globalname">YourUsername</div>
+            <div class="dc-username" id="pv-username">@yourusername</div>
+          </div>
+          <div class="dc-divider"></div>
+          <div class="dc-section-label">جاري التشغيل</div>
+          <div class="dc-activity" id="pv-activity">
+            <img class="dc-act-img-large" id="pv-large-img" src="" alt=""/>
+            <img class="dc-act-img-small" id="pv-small-img" src="" alt=""/>
+            <div class="dc-act-text">
+              <div class="dc-act-name"  id="pv-app-name">نامل</div>
+              <div class="dc-act-detail" id="pv-details" style="display:none"></div>
+              <div class="dc-act-state"  id="pv-state"   style="display:none"></div>
+              <div class="dc-act-time"  id="pv-time"     style="display:none"></div>
+            </div>
+          </div>
+          <div class="dc-buttons" id="pv-buttons"></div>
+        </div>
+      </div>
+      <div class="preview-note" data-i18n="preview_note">* هذه معاينة تقريبية، مظهر ديسكورد الحقيقي قد يختلف قليلاً</div>
+    </div>
+  </div>
+
+  <!-- TAB: SETTINGS -->
+  <div class="tab-panel" id="panel-settings">
+    <div class="scroll-area">
+      <div class="section-header">
+        <div>
+          <div class="section-title" data-i18n="settings_title">إعدادات التطبيق</div>
+          <div class="section-sub" data-i18n="settings_sub">تخصيص الخيارات، السلوك، واللغات</div>
+        </div>
+      </div>
+
+      <!-- Language Card -->
+      <div class="card">
+        <div class="card-title" data-i18n="card_language"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg> لغة التطبيق / Language</div>
+        <div class="field">
+          <label data-i18n="lbl_select_lang">اختر اللغة المفضلة للواجهة</label>
+          <div class="row2" style="margin-top:4px">
+            <button class="btn-ghost" id="lang-ar-btn" onclick="changeLanguage('ar')">🇸🇦 العربية (Arabic)</button>
+            <button class="btn-ghost" id="lang-en-btn" onclick="changeLanguage('en')">🇺🇸 English</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- System Behavior -->
+      <div class="card">
+        <div class="card-title" data-i18n="card_system"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg> سلوك التطبيق والنظام</div>
+        
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label" data-i18n="opt_autostart">التشغيل تلقائياً مع ويندوز</div>
+            <div class="toggle-hint" data-i18n="opt_autostart_hint">بدء نامل تلقائياً عند تسجيل الدخول</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="setting-autostart" onchange="saveCurrentSettings()"/>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label" data-i18n="opt_min_tray">التصغير لشريط المهام (Tray) عند الإغلاق</div>
+            <div class="toggle-hint" data-i18n="opt_min_tray_hint">إبقاء التطبيق يعمل في الخلفية بدلاً من الإغلاق الكامل</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="setting-min-tray" onchange="saveCurrentSettings()"/>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="sep"></div>
+
+        <div class="toggle-row">
+          <div>
+            <div class="toggle-label" data-i18n="opt_start_min">التشغيل مصغراً</div>
+            <div class="toggle-hint" data-i18n="opt_start_min_hint">بدء التطبيق مخفياً في شريط المهام فور التشغيل</div>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="setting-start-min" onchange="saveCurrentSettings()"/>
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Theme Accent Color -->
+      <div class="card">
+        <div class="card-title" data-i18n="card_appearance"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path></svg> المظهر واللون الرئيسي</div>
+        <div class="field">
+          <label data-i18n="lbl_accent_color">لون التمييز (Accent Color)</label>
+          <div class="color-presets" style="display:flex;gap:8px;margin-top:6px">
+            <button class="color-dot active" style="background:#6366f1" onclick="setAccentColor('#6366f1')"></button>
+            <button class="color-dot" style="background:#a855f7" onclick="setAccentColor('#a855f7')"></button>
+            <button class="color-dot" style="background:#ec4899" onclick="setAccentColor('#ec4899')"></button>
+            <button class="color-dot" style="background:#22c55e" onclick="setAccentColor('#22c55e')"></button>
+            <button class="color-dot" style="background:#3b82f6" onclick="setAccentColor('#3b82f6')"></button>
+            <button class="color-dot" style="background:#f59e0b" onclick="setAccentColor('#f59e0b')"></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Self-Repair & Diagnostics Card -->
+      <div class="card">
+        <div class="card-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+          إصلاح التطبيق وتشخيص الأعطال (Self-Repair)
+        </div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">
+          يقوم هذا الخيار بفحص سلامة ملفات التخزين، مسح الذاكرة المؤقتة (Cache)، إعادة تهيئة اتصال ديسكورد، وحل أي تعليق في ثوانٍ.
+        </div>
+        <button class="btn-3d" onclick="handleSelfRepair()" style="background:#f59e0b;color:#fff;width:100%;font-weight:700;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          بدء الإصلاح الذاتي والتنظيف الفوري
+        </button>
+      </div>
+
+      <!-- Backup & Restore Card -->
+      <div class="card">
+        <div class="card-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          النسخ الاحتياطي ومشاركة البروفايلات (Backup)
+        </div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:12px;">
+          تصدير أو استيراد جميع إعداداتك وبروفايلاتك وتوكناتك بملف واحد لمشاركتها أو حفظها بأمان.
+        </div>
+        <div class="row2">
+          <button class="btn-3d btn-3d-blue" onclick="handleExportBackup()" style="flex:1;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            تصدير نسخة احتياطية
+          </button>
+          <button class="btn-3d btn-3d-purple" onclick="handleImportBackup()" style="flex:1;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            استيراد نسخة احتياطية
+          </button>
+        </div>
+      </div>
+
+      <!-- Secure GitHub & Custom Downloader Card -->
+      <div class="card">
+        <div class="card-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+          التحميل الآمن من GitHub والمصادر المعتمدة
+        </div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:10px;">
+          قم بلصق رابط ملف مخصص (بروفايل، حزمة، أو تحديث) من GitHub لتحميله وتثبيته مباشرة عبر اتصال مشفر:
+        </div>
+        <div style="display:flex;gap:8px;">
+          <input type="text" id="custom-download-url" placeholder="https://raw.githubusercontent.com/... أو https://github.com/..." style="flex:1;"/>
+          <button class="btn-accent" onclick="handleSecureDownload()" id="btn-secure-download" style="white-space:nowrap;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            تحميل وتثبيت
+          </button>
+        </div>
+        <div id="download-progress-box" style="display:none;margin-top:10px;background:var(--surface2);padding:8px 12px;border-radius:6px;border:1px solid var(--border);">
+          <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px;">
+            <span id="download-filename">جاري التحميل...</span>
+            <span id="download-percent">0%</span>
+          </div>
+          <div style="width:100%;height:6px;background:var(--surface3);border-radius:3px;overflow:hidden;">
+            <div id="download-bar" style="width:0%;height:100%;background:var(--accent);transition:width 0.2s;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB: ABOUT -->
+  <div class="tab-panel" id="panel-about">
+  <div class="scroll-area">
+    <div class="section-header">
+      <div>
+        <div class="section-title">حول نامل</div>
+        <div class="section-sub">معلومات التطبيق والترخيص</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px;padding:0 2px 20px">
+      <div class="card" style="text-align:center;padding:28px 20px;">
+        <img src="assets/naml-logo.png" style="width:90px;height:90px;object-fit:contain;margin-bottom:12px;" alt="نامل"/>
+        <div style="font-size:28px;font-weight:900;background:linear-gradient(135deg,#06b6d4,#10b981);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px;">نامل</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:4px;">الإصدار 2.0.0</div>
+        <div style="font-size:12px;color:var(--muted);">منصة متكاملة للتحكم في Discord Rich Presence وإدارة بوتات ديسكورد</div>
+      </div>
+      <div class="card">
+        <div class="card-title">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          معلومات التطبيق
+        </div>
+        <table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:8px;">
+          <tr><td style="color:var(--muted);padding:5px 0;width:100px;">الاسم:</td><td style="font-weight:600;">نامل (Naml)</td></tr>
+          <tr><td style="color:var(--muted);padding:5px 0;">الإصدار:</td><td style="font-weight:600;">2.0.0</td></tr>
+          <tr><td style="color:var(--muted);padding:5px 0;">الترخيص:</td><td style="font-weight:600;">مغلق المصدر — جميع الحقوق محفوظة</td></tr>
+          <tr><td style="color:var(--muted);padding:5px 0;">التقنيات:</td><td style="font-weight:600;">Electron.js · Node.js · Discord API</td></tr>
+          <tr><td style="color:var(--muted);padding:5px 0;">الأمان:</td><td style="font-weight:600;">تشفير محلي 100% — بلا خوادم خارجية</td></tr>
+        </table>
+      </div>
+
+      <!-- Updates & Changelog Card -->
+      <div class="card" id="updates-card">
+        <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;">
+          <div style="display:flex;align-items:center;gap:6px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+            <span>التحديثات وما الجديد (Changelog)</span>
+          </div>
+          <span style="background:rgba(34,197,94,0.15);color:var(--green);padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;">v2.0.0</span>
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;margin:10px 0 14px;background:var(--surface2);padding:10px 14px;border-radius:8px;border:1px solid var(--border);">
+          <div>
+            <div style="font-weight:700;font-size:12px;" id="update-status-title">أنت تستخدم أحدث إصدار مستقر</div>
+            <div style="font-size:11px;color:var(--muted);" id="update-status-sub">تم تأمين النسخة واسترجاع بياناتك بنجاح</div>
+          </div>
+          <button id="btn-check-updates" onclick="handleCheckUpdates()" style="display:flex;align-items:center;gap:5px;padding:6px 12px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+            <span>فحص التحديثات</span>
+          </button>
+        </div>
+
+        <div style="font-weight:700;font-size:12px;margin-bottom:8px;color:var(--text);">ما تم إضافته في هذا التحديث (v2.0.0):</div>
+        <div class="changelog-list" style="display:flex;flex-direction:column;gap:8px;" id="changelog-container">
+          <div style="background:var(--surface);border:1px solid var(--border);border-right:3px solid var(--green);border-radius:6px;padding:8px 12px;">
+            <div style="font-weight:700;font-size:12px;color:var(--green);margin-bottom:2px;">🛡️ استرجاع واستقرار بيانات الحفظ والبروفايلات</div>
+            <div style="font-size:11px;color:var(--muted);">نظام تخزين ذكي موحد يبحث في كافة مسارات البيانات ويحمي إعداداتك وبروفايلاتك من الضياع.</div>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-right:3px solid var(--accent);border-radius:6px;padding:8px 12px;">
+            <div style="font-weight:700;font-size:12px;color:var(--accent);margin-bottom:2px;">🚀 تشغيل مباشر بالأيقونة واختصار سطح المكتب</div>
+            <div style="font-size:11px;color:var(--muted);">إنشاء اختصار مباشر على سطح المكتب والمجلد لفتح البرنامج بنقرة زر وبشعار نامل الرسمي.</div>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-right:3px solid var(--purple);border-radius:6px;padding:8px 12px;">
+            <div style="font-weight:700;font-size:12px;color:var(--purple);margin-bottom:2px;">🔒 تعزيز الأمان والحماية البرمجية للتوزيع</div>
+            <div style="font-size:11px;color:var(--muted);">عزل تام للنوافذ الخارجية، تأمين بروتوكول فتح الروابط، وتشفير التوكنات عبر تقنية DPAPI.</div>
+          </div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-right:3px solid var(--yellow);border-radius:6px;padding:8px 12px;">
+            <div style="font-weight:700;font-size:12px;color:var(--yellow);margin-bottom:2px;">✨ مركز فحص التحديثات وسجل التغييرات</div>
+            <div style="font-size:11px;color:var(--muted);">واجهة فورية لمعرفة ما الجديد في كل إصدار وإمكانية التحقق الآمن من وجود إصدارات أحدث.</div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+          الدعم الفني والمجتمع
+        </div>
+        <p style="font-size:12px;color:var(--muted);margin:8px 0 12px;">للحصول على المساعدة أو التبليغ عن مشاكل:</p>
+        <button class="btn-accent" onclick="window.rpc.openExternal('https://discord.gg/PCu6fdXRGg')" style="width:100%;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-left:6px;"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+          سيرفر الدعم الرسمي
+        </button>
+      </div>
+      <div style="text-align:center;font-size:11px;color:var(--muted);padding:4px;">
+        جميع الحقوق محفوظة لـ QZV سنتري كي اس اي.
+      </div>
+    </div>
+  </div>
+</div>
+        <p style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:12px" data-i18n="about_server_desc">
+          انضم إلى سيرفر الديسكورد الرسمي للحصول على التحديثات، الدعم الفني، والمشاركة في تطوير المشروع:
+        </p>
+        <div class="discord-join-box">
+          <div class="discord-link-text">https://discord.gg/PCu6fdXRGg</div>
+          <button class="btn-3d btn-3d-purple" style="width:100%" onclick="window.rpc.openExternal('https://discord.gg/PCu6fdXRGg')">
+            <span data-i18n="btn_join_discord"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path></svg> الانضمام لسيرفر ديسكورد</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Developer & Credits -->
+      <div class="card">
+        <div class="card-title" data-i18n="about_dev_title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> المبرمج والمشروع</div>
+        <div class="about-info-grid">
+          <div class="info-item">
+            <span class="info-lbl" data-i18n="lbl_developer">المطور:</span>
+            <span class="info-val">QZV سنتري كي اس اي</span>
+          </div>
+          <div class="info-item">
+            <span class="info-lbl" data-i18n="lbl_license">الترخيص:</span>
+            <span class="info-val">جميع الحقوق محفوظة لـ QZV سنتري كي اس اي</span>
+          </div>
+          <div class="info-item">
+            <span class="info-lbl" data-i18n="lbl_framework">التقنيات:</span>
+            <span class="info-val">Electron, Node.js, WebSockets</span>
+          </div>
+          <div class="info-item">
+            <span class="info-lbl" data-i18n="lbl_security">الأمان:</span>
+            <span class="info-val" data-i18n="val_security">تشفير محلي 100% بدون خوادم خارجية</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- #content -->
+
+<!-- ══ TOAST ══ -->
+<div id="toast-container"></div>
+
+<!-- Self-Repair Modal -->
+<div class="modal-overlay" id="modal-repair" style="display:none">
+  <div class="modal" style="max-width:440px;">
+    <div class="modal-title" style="display:flex;align-items:center;gap:8px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+      <span>تقرير فحص وإصلاح التطبيق</span>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:12px;">نتائج فحص سلامة الملفات، تنظيف الذاكرة المؤقتة، والاتصال بديسكورد:</div>
+    <div id="repair-steps-container" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;">
+      <!-- Populated dynamically -->
+    </div>
+    <div class="modal-actions">
+      <button class="btn-accent" onclick="closeModal('modal-repair')">تم وفهمت</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODALS ══ -->
+<!-- Save Profile Modal -->
+<div class="modal-overlay" id="modal-save-profile" style="display:none">
+  <div class="modal">
+    <div class="modal-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> حفظ كبروفايل</div>
+    <div class="field">
+      <label>اسم البروفايل</label>
+      <input type="text" id="profile-name-input" placeholder="مثال: بث تويتش، لعب GTA..." maxlength="40"/>
+    </div>
+    <div class="field">
+      <label>إيموجي (اختياري)</label>
+      <input type="text" id="profile-emoji-input" placeholder="<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><rect x="2" y="6" width="20" height="12" rx="2"></rect><line x1="6" y1="12" x2="10" y2="12"></line><line x1="8" y1="10" x2="8" y2="14"></line><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg>" maxlength="4"/>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-accent" onclick="confirmSaveProfile()">حفظ</button>
+      <button class="btn-ghost"  onclick="closeModal('modal-save-profile')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Bot Modal -->
+<div class="modal-overlay" id="modal-add-bot" style="display:none">
+  <div class="modal">
+    <div class="modal-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><rect x="3" y="11" width="18" height="10" rx="2"></rect><circle cx="12" cy="5" r="2"></circle><path d="M12 7v4"></path><line x1="8" y1="16" x2="8" y2="16"></line><line x1="16" y1="16" x2="16" y2="16"></line></svg> إضافة توكن بوت</div>
+    <div class="field">
+      <label>اسم البوت (للتمييز)</label>
+      <input type="text" id="bot-name-input" placeholder="مثال: SentryBot" maxlength="40"/>
+    </div>
+    <div class="field">
+      <label>التوكن (Bot Token)</label>
+      <div class="input-row">
+        <input type="password" id="bot-token-input" placeholder="MTIz..."/>
+        <button class="btn-link" onclick="toggleTokenVis()" id="tok-eye" title="عرض/إخفاء">👁</button>
+      </div>
+    </div>
+    <div class="field-hint">🔒 التوكن يُحفظ مشفر محلياً فقط ولا يُرسل لأي خادم.</div>
+    <div class="modal-actions">
+      <button class="btn-3d btn-3d-purple" onclick="confirmAddBot()">حفظ التوكن</button>
+      <button class="btn-ghost" onclick="closeModal('modal-add-bot')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- Crop Modal -->
+<div class="modal-overlay" id="modal-crop" style="display:none">
+  <div class="modal modal-wide">
+    <div class="modal-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><line x1="20" y1="4" x2="8.12" y2="15.88"></line><line x1="14.47" y1="14.48" x2="20" y2="20"></line><line x1="8.12" y1="8.12" x2="12" y2="12"></line></svg> اقتصاص الصورة</div>
+    <div id="crop-container">
+      <img id="crop-img" src="" alt="" draggable="false"/>
+      <div class="crop-crosshair"></div>
+    </div>
+    <div class="crop-controls">
+      <div class="crop-ctrl-row">
+        <label>تكبير</label>
+        <input type="range" id="crop-zoom" min="1" max="5" step="0.02" value="1" oninput="applyCropTransform()"/>
+        <span id="crop-zoom-val">1.0×</span>
+      </div>
+      <div class="crop-ctrl-row">
+        <label>أفقي ←→</label>
+        <input type="range" id="crop-x" min="-300" max="300" step="1" value="0" oninput="applyCropTransform()"/>
+      </div>
+      <div class="crop-ctrl-row">
+        <label>عمودي ↑↓</label>
+        <input type="range" id="crop-y" min="-300" max="300" step="1" value="0" oninput="applyCropTransform()"/>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-accent" id="crop-confirm-btn" onclick="confirmCrop()">
+        <span id="crop-btn-txt">رفع الصورة</span>
+      </button>
+      <button class="btn-ghost" onclick="closeModal('modal-crop')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Frame Modal -->
+<div class="modal-overlay" id="modal-frame" style="display:none">
+  <div class="modal">
+    <div class="modal-title" id="frame-modal-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg> إضافة فريم متحرك</div>
+    <input type="hidden" id="frame-edit-index" value="-1"/>
+    <div class="field">
+      <label>عنوان/اسم الفريم</label>
+      <input type="text" id="frame-name-input" placeholder="مثال: فريم 1 - بث تويتش" maxlength="30"/>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>التفاصيل (Details)</label>
+        <input type="text" id="frame-details-input" placeholder="ماذا تفعل..." maxlength="128"/>
+      </div>
+      <div class="field">
+        <label>الحالة (State)</label>
+        <input type="text" id="frame-state-input" placeholder="حالة إضافية..." maxlength="128"/>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>الصورة الكبيرة (Key/URL)</label>
+        <input type="text" id="frame-large-img-input" placeholder="twitch / vscode..."/>
+      </div>
+      <div class="field">
+        <label>الصورة الصغيرة (Key/URL)</label>
+        <input type="text" id="frame-small-img-input" placeholder="live / verified..."/>
+      </div>
+    </div>
+    <div class="modal-actions" style="margin-top:12px">
+      <button class="btn-accent" onclick="saveFrameFromModal()">حفظ الفريم</button>
+      <button class="btn-ghost" onclick="closeModal('modal-frame')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<script src="renderer.js"></script>
+</body>
+</html>

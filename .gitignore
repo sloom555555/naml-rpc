@@ -1,0 +1,27 @@
+﻿# Dependencies
+node_modules/
+
+# Production Builds & Executables
+release-builds/
+dist/
+out/
+*.zip
+*.tar.gz
+
+# Local User Data, Credentials & Bots
+sentry-rpc-config.json
+sentry-rpc-profiles.json
+sentry-rpc-settings.json
+sentry-rpc-bots.enc
+*.enc
+
+# Logs & Cache
+*.log
+npm-debug.log*
+
+# OS & Editor
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+*.lnk

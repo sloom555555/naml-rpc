@@ -1,0 +1,46 @@
+{
+  "name": "naml",
+  "version": "2.0.0",
+  "description": "نامل — منصة Rich Presence وإدارة بوتات ديسكورد",
+  "main": "main.js",
+  "author": "QZV سنتري كي اس اي",
+  "license": "جميع الحقوق محفوظة لـ QZV سنتري كي اس اي",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "build": "npx postcss style.css -u cssnano -o style.min.css",
+    "dist": "npm run build && npx electron-packager . Naml --platform=win32 --arch=x64 --icon=assets/icon.ico --out=release-builds --overwrite"
+  },
+  "build": {
+    "appId": "com.naml.app",
+    "productName": "Naml",
+    "copyright": "جميع الحقوق محفوظة لـ QZV سنتري كي اس اي",
+    "directories": {
+      "output": "dist"
+    },
+    "icon": "assets/icon.ico",
+    "win": {
+      "target": [
+        "portable"
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "files": [
+      "**/*",
+      "!dist/**/*",
+      "!release-builds/**/*"
+    ]
+  },
+  "dependencies": {
+    "discord-rpc": "^4.0.1"
+  },
+  "devDependencies": {
+    "cssnano": "^8.0.10",
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3",
+    "jimp": "^1.6.1",
+    "png-to-ico": "^3.0.2",
+    "postcss": "^8.5.28",
+    "postcss-cli": "^12.0.0"
+  }
+}
