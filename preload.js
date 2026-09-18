@@ -23,7 +23,10 @@ contextBridge.exposeInMainWorld('rpc', {
   checkDiscordProcess: () => ipcRenderer.invoke('check-discord-process'),
   getDiscordUser: () => ipcRenderer.invoke('get-discord-user'),
   onDiscordUserChanged: (cb) => ipcRenderer.on('discord-user-changed', (_e, data) => cb(data)),
-  onStopped: (cb) => ipcRenderer.on('rpc-stopped', cb)
+  onStopped: (cb) => ipcRenderer.on('rpc-stopped', cb),
+  onAppHidden: (cb) => ipcRenderer.on('app-hidden', cb),
+  onAppShown: (cb) => ipcRenderer.on('app-shown', cb),
+  trimMemory: () => ipcRenderer.invoke('app-trim-memory')
 });
 
 
