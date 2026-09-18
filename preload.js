@@ -28,7 +28,9 @@ contextBridge.exposeInMainWorld('rpc', {
   onAppShown: (cb) => ipcRenderer.on('app-shown', cb),
   trimMemory: () => ipcRenderer.invoke('app-trim-memory'),
   sendWebhook: (data) => ipcRenderer.invoke('discord-send-webhook', data),
-  getCurrentMedia: () => ipcRenderer.invoke('get-current-media')
+  getCurrentMedia: () => ipcRenderer.invoke('get-current-media'),
+  fetchSpotifyTrack: (url) => ipcRenderer.invoke('spotify-fetch-track', url),
+  fetchSpotifyLyrics: (params) => ipcRenderer.invoke('spotify-fetch-lyrics', params)
 });
 
 

@@ -623,7 +623,138 @@
   height: 100%;
   width: 0%;
   background: linear-gradient(90deg, var(--accent), var(--accent2));
-  transition: width 0.1s linear;
+}
+/* ── Layout & Full Scroll Fix ── */
+#content {
+  flex: 1 !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  position: relative !important;
+}
+.tab-panel {
+  flex: 1 !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  overflow: hidden !important;
+  display: none;
+  flex-direction: column;
+}
+.tab-panel.active {
+  display: flex !important;
+}
+.scroll-area {
+  flex: 1 !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 14px 14px 120px 14px !important;
+  box-sizing: border-box !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(99, 102, 241, 0.3) transparent !important;
+}
+.scroll-area::-webkit-scrollbar {
+  width: 6px;
+}
+.scroll-area::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.25);
+  border-radius: 4px;
+}
+.scroll-area::-webkit-scrollbar-thumb:hover {
+  background: rgba(99, 102, 241, 0.5);
+}
+
+/* ── Modern 3D Interactive UI Polish ── */
+.btn-3d {
+  position: relative;
+  border-radius: 8px;
+  font-weight: 700;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 8px 14px;
+  user-select: none;
+}
+.btn-3d:active {
+  transform: translateY(1px) scale(0.98);
+}
+.btn-3d-green {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff;
+  border-color: rgba(16, 185, 129, 0.4);
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);
+}
+.btn-3d-green:hover {
+  filter: brightness(1.1);
+  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.35);
+}
+
+/* ── Spotify Card & Lyrics Importer Styles ── */
+.spotify-track-card {
+  background: linear-gradient(135deg, rgba(20, 30, 25, 0.9), rgba(15, 20, 32, 0.95));
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  border-radius: var(--radius);
+  padding: 14px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+.spotify-track-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 90px;
+  height: 90px;
+  background: radial-gradient(circle, rgba(34, 197, 94, 0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+.spotify-result-box {
+  background: var(--surface2);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 10px;
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.spotify-cover-img {
+  width: 52px;
+  height: 52px;
+  border-radius: 6px;
+  object-fit: cover;
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.spotify-lyrics-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+}
+.lyrics-preview-item {
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 11.5px;
 }
 </style>
 </head>
@@ -752,6 +883,52 @@
           <div class="field" id="stream-url-field" style="display:none;">
             <label>رابط البث (Twitch أو YouTube Live)</label>
             <input type="text" id="streamUrl" placeholder="https://twitch.tv/..." oninput="debouncedPreview(); debouncedAutoSave(true)"/>
+          </div>
+        </div>
+      </div>
+
+      <!-- Spotify Track & Synced Lyrics Card -->
+      <div class="spotify-track-card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <div style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:800;color:#22c55e;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.563.387-.857.207-2.35-1.434-5.308-1.758-8.793-.963-.335.077-.67-.133-.746-.469-.077-.334.132-.67.467-.746 3.808-.871 7.077-.496 9.721 1.115.295.18.388.563.208.856zm1.224-2.723c-.227.37-.714.485-1.083.257-2.69-1.653-6.79-2.133-9.97-1.168-.413.125-.852-.107-.978-.521-.125-.414.108-.853.522-.978 3.633-1.103 8.147-.568 11.252 1.327.37.227.485.714.257 1.083zm.105-2.835C14.692 8.95 9.375 8.775 6.297 9.71c-.494.15-1.018-.13-1.168-.624-.15-.495.13-1.018.625-1.168 3.532-1.072 9.404-.866 13.115 1.338.445.264.59.838.327 1.282-.264.443-.838.59-1.281.327z"/></svg>
+            سحب أغنية وكلمات سبوتيفاي تلقائياً (Spotify Track & Lyrics)
+          </div>
+          <span style="font-size:10px;color:var(--muted);background:rgba(255,255,255,0.06);padding:2px 7px;border-radius:10px;">سحب الغلاف والكلمات</span>
+        </div>
+
+        <div class="field">
+          <label>ضع رابط أي أغنية من سبوتيفاي (Spotify Track Link):</label>
+          <div style="display:flex;gap:6px;">
+            <input type="text" id="spotify-track-input" placeholder="https://open.spotify.com/track/..." style="background:var(--surface2);border-color:rgba(34,197,94,0.3);flex:1;"/>
+            <button type="button" class="btn-3d btn-3d-green" id="btn-fetch-spotify" onclick="handleFetchSpotifyTrackAndLyrics()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+              سحب الأغنية والكلمات
+            </button>
+          </div>
+        </div>
+
+        <!-- Spotify Track Result Box -->
+        <div id="spotify-result-box" class="spotify-result-box" style="display:none;">
+          <img id="spotify-cover-preview" class="spotify-cover-img" src="" alt="Album Cover"/>
+          <div style="flex:1;min-width:0;">
+            <div id="spotify-title-preview" style="font-weight:700;font-size:13px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">اسم الأغنية</div>
+            <div id="spotify-artist-preview" style="font-size:11px;color:var(--muted);margin-top:2px;">اسم الفنان</div>
+            <div style="margin-top:4px;display:flex;align-items:center;gap:6px;">
+              <span id="spotify-lyrics-status" class="spotify-lyrics-badge">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polyline points="20 6 9 17 4 12"/></svg>
+                تم جلب الكلمات المتزامنة
+              </span>
+              <span id="spotify-lines-count" style="font-size:10px;color:var(--muted);">0 سطر</span>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:5px;">
+            <button type="button" class="btn-sm btn-3d-green" onclick="applySpotifyToRpcPresence()" title="تطبيق كحالة استماع فورية في ديسكورد">
+              🎧 تطبيق على الـ RPC
+            </button>
+            <button type="button" class="btn-sm btn-3d-purple" id="btn-spotify-to-rotator" onclick="convertSpotifyLyricsToRotator()" title="تحويل الكلمات المتزامنة إلى فريمات متحركة تمشي مع الأغنية">
+              🔄 تحويل لفريمات متحركة
+            </button>
           </div>
         </div>
       </div>
@@ -985,9 +1162,14 @@
             </div>
           </div>
 
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;margin-bottom:8px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;margin-bottom:8px;flex-wrap:wrap;gap:6px">
             <span style="font-size:12px;font-weight:800;color:var(--accent2)" data-i18n="frames_list_title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg> فريمات المشهد المتحرك:</span>
-            <button class="btn-sm btn-3d-purple" onclick="openAddFrameModal()" data-i18n="btn_add_frame">+ إضافة فريم جديد</button>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <button type="button" class="btn-sm btn-3d-green" onclick="openLyricsImporterModal()" title="استيراد كلمات أغنية أو نص جاهز وتوليد الفريمات تلقائياً عبر الذكاء الاصطناعي أو ملف LRC">
+                🤖 استيراد كلمات (AI & LRC)
+              </button>
+              <button type="button" class="btn-sm btn-3d-purple" onclick="openAddFrameModal()" data-i18n="btn_add_frame">+ إضافة فريم جديد</button>
+            </div>
           </div>
 
           <div id="rotator-frames-list" style="display:flex;flex-direction:column;gap:6px"></div>
@@ -1980,6 +2162,7 @@
           <input type="file" id="frame-file-small" accept="image/*" style="display:none" onchange="handleFrameFileSelect(event, 'small')"/>
         </div>
       </div>
+    </div>
     <!-- Frame Duration -->
     <div class="row2" style="margin-top:10px;">
       <div class="field">
@@ -1994,6 +2177,128 @@
     <div class="modal-actions" style="margin-top:14px">
       <button class="btn-accent" onclick="saveFrameFromModal()">حفظ الفريم</button>
       <button class="btn-ghost" onclick="closeModal('modal-frame')">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: AI & LRC Lyrics Importer -->
+<div class="modal-overlay" id="modal-lyrics-importer">
+  <div class="modal" style="max-width:580px; max-height:90vh; overflow-y:auto;">
+    <div class="modal-title" style="display:flex;align-items:center;justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span style="font-size:18px;">🤖</span>
+        <span>استيراد كلمات الأغاني وتوليد الفريمات (AI & LRC)</span>
+      </div>
+      <span class="badge" style="background:rgba(34,197,94,0.15);color:#22c55e;">تلقائي بالكامل</span>
+    </div>
+
+    <!-- AI Guide & Quick Prompt Copy -->
+    <div style="background:linear-gradient(135deg, rgba(99,102,241,0.12), rgba(168,85,247,0.08)); border:1px solid rgba(99,102,241,0.3); border-radius:8px; padding:12px; margin-bottom:14px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <span style="font-size:12px;font-weight:700;color:var(--accent2);display:flex;align-items:center;gap:5px;">
+          💡 استعن بأي ذكاء اصطناعي (ChatGPT / Gemini / Claude)
+        </span>
+        <button type="button" class="btn-sm btn-3d-purple" onclick="copyAiLyricsPrompt()" style="font-size:11px;padding:3px 10px;">
+          📋 نسخ أمر الـ AI (Prompt)
+        </button>
+      </div>
+      <p style="font-size:11px;color:var(--muted);line-height:1.6;margin:0;">
+        انسخ الأمر وافتحه في أي ذكاء اصطناعي واكتب له اسم الأغنية فقط، وسيعطيك الكلمات موزعة بالأوقات جاهزة للصق هنا بنقرة واحدة! أو ارفع ملف <code style="color:#22c55e">.lrc</code> مباشر.
+      </p>
+    </div>
+
+    <!-- Input Source: Upload or Paste -->
+    <div class="field">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <label style="margin:0;">ملف الكلمات أو النص المباشر:</label>
+        <div style="display:flex;gap:6px;">
+          <input type="file" id="lyrics-file-input" accept=".lrc,.txt,.json" style="display:none;" onchange="handleLyricsFileInput(event)"/>
+          <button type="button" class="btn-sm" onclick="document.getElementById('lyrics-file-input').click()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:11px;padding:3px 8px;border-radius:6px;cursor:pointer;">
+            📁 رفع ملف (.lrc / .txt / .json)
+          </button>
+        </div>
+      </div>
+      <textarea id="lyrics-raw-input" rows="6" placeholder="الصق الكلمات هنا...
+أمثلة مقبولة:
+1) بتنسيق LRC:
+[00:15.20] أول سطر من الأغنية
+[00:21.50] السطر الثاني
+2) سطر مع مدة بالثواني:
+السطر الأول | 4
+السطر الثاني | 5
+3) سطور عادية وسنتكفل بالتوقيت تلقائياً!" oninput="previewParsedLyrics()" style="background:var(--surface3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:12px;padding:8px 10px;width:100%;box-sizing:border-box;resize:vertical;"></textarea>
+    </div>
+
+    <!-- Bulk Frame Options -->
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-top:10px;">
+      <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px;">🎨 تخصيص مظهر جميع الفريمات الناتجة دفعة واحدة:</div>
+
+      <div class="row2">
+        <!-- Details Prefix -->
+        <div class="field">
+          <label>سطر التفاصيل الثابت (Details - اختياري):</label>
+          <input type="text" id="lyrics-details-input" placeholder="مثال: 🎵 تستمع إلى الأغنية" oninput="previewParsedLyrics()"/>
+        </div>
+        <!-- Default Duration -->
+        <div class="field">
+          <label>المدة الافتراضية لكل فريم (بالثواني):</label>
+          <input type="number" id="lyrics-default-dur" value="4" min="2" max="60" oninput="previewParsedLyrics()"/>
+        </div>
+      </div>
+
+      <!-- Bulk Images -->
+      <div class="row2" style="margin-top:8px;">
+        <!-- Large Image -->
+        <div class="field">
+          <label>الصورة الكبيرة لجميع الفريمات:</label>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <img id="lyrics-bulk-large-thumb" src="" style="width:32px;height:32px;border-radius:6px;object-fit:cover;background:var(--surface3);display:none;border:1px solid var(--border);" alt=""/>
+            <input type="text" id="lyrics-bulk-large-img" placeholder="رابط أو مفتاح الصورة..." oninput="updateLyricsBulkThumb('large'); previewParsedLyrics()" style="flex:1;"/>
+            <button type="button" class="btn-upload" onclick="triggerLyricsBulkUpload('large')" title="رفع صورة من جهازك">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </button>
+            <input type="file" id="lyrics-file-large" accept="image/*" style="display:none" onchange="handleLyricsBulkFileSelect(event, 'large')"/>
+          </div>
+        </div>
+
+        <!-- Small Image -->
+        <div class="field">
+          <label>الصورة الصغيرة لجميع الفريمات:</label>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <img id="lyrics-bulk-small-thumb" src="" style="width:32px;height:32px;border-radius:6px;object-fit:cover;background:var(--surface3);display:none;border:1px solid var(--border);" alt=""/>
+            <input type="text" id="lyrics-bulk-small-img" placeholder="رابط أو مفتاح الصورة..." oninput="updateLyricsBulkThumb('small'); previewParsedLyrics()" style="flex:1;"/>
+            <button type="button" class="btn-upload" onclick="triggerLyricsBulkUpload('small')" title="رفع صورة من جهازك">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </button>
+            <input type="file" id="lyrics-file-small" accept="image/*" style="display:none" onchange="handleLyricsBulkFileSelect(event, 'small')"/>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Preview Count & List -->
+    <div style="margin-top:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <span style="font-size:12px;font-weight:700;color:var(--text);">
+          📋 المعاينة المباشرة (<span id="lyrics-preview-count" style="color:#22c55e;">0</span> فريم مكتشف):
+        </span>
+      </div>
+      <div id="lyrics-preview-list" style="max-height:160px;overflow-y:auto;background:var(--surface1);border:1px solid var(--border);border-radius:6px;padding:6px;display:flex;flex-direction:column;gap:4px;">
+        <div style="font-size:11px;color:var(--muted);text-align:center;padding:12px;">قم بلصق الكلمات أو رفع ملف لمعاينة الفريمات قبل التوليد</div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="modal-actions" style="margin-top:16px;display:flex;justify-content:space-between;align-items:center;gap:8px;">
+      <button class="btn-ghost" onclick="closeModal('modal-lyrics-importer')">إلغاء</button>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-3d btn-3d-purple" onclick="executeLyricsImport(false)" title="إضافة الفريمات مع الإبقاء على الفريمات الحالية">
+          ➕ إضافة للفريمات
+        </button>
+        <button class="btn-3d btn-3d-green" onclick="executeLyricsImport(true)" title="حذف الفريمات الحالية واستبدالها بهذه الأغنية بالكامل">
+          ⚡ استبدال الكل وتطبيق
+        </button>
+      </div>
     </div>
   </div>
 </div>

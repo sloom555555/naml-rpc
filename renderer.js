@@ -2579,4 +2579,522 @@ async function sendDiscordWebhook() {
   }
 }
 
+// ══════════════════════════════════════════
+//  SPOTIFY & SYNCED LYRICS ENGINE
+// ══════════════════════════════════════════
+let cachedSpotifyTrack = null;
+let cachedSpotifyLyrics = null;
+let parsedLyricsForImport = [];
+
+function parseLrc(lrcText) {
+  if (!lrcText || typeof lrcText !== 'string') return [];
+  const lines = lrcText.split(/\r?\n/);
+  const timeRegex = /\[(\d{1,2}):(\d{2})(?:\.(\d{1,3}))?\]/g;
+  const parsed = [];
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    if (/^\[(ti|ar|al|by|offset|length|re|ve):/i.test(trimmed)) continue;
+
+    timeRegex.lastIndex = 0;
+    const matches = [...trimmed.matchAll(timeRegex)];
+    if (matches.length > 0) {
+      const text = trimmed.replace(timeRegex, '').trim();
+      if (!text) continue;
+      for (const m of matches) {
+        const min = parseInt(m[1], 10);
+        const sec = parseInt(m[2], 10);
+        const msStr = m[3] || '0';
+        const ms = parseFloat('0.' + msStr);
+        const totalSec = min * 60 + sec + ms;
+        parsed.push({ time: totalSec, text });
+      }
+    }
+  }
+
+  parsed.sort((a, b) => a.time - b.time);
+
+  const result = [];
+  for (let i = 0; i < parsed.length; i++) {
+    const curr = parsed[i];
+    const next = parsed[i + 1];
+    let duration = next ? Math.round(next.time - curr.time) : 5;
+    if (duration < 2) duration = 3;
+    if (duration > 30) duration = 15;
+    result.push({
+      text: curr.text,
+      duration: duration
+    });
+  }
+  return result;
+}
+
+function parseLyricsContent(rawText, defaultDur = 4) {
+  if (!rawText || !rawText.trim()) return [];
+  const trimmed = rawText.trim();
+  
+  // 1. Check if it's LRC format
+  if (/\[\d{1,2}:\d{2}/.test(trimmed)) {
+    const lrcParsed = parseLrc(trimmed);
+    if (lrcParsed.length > 0) return lrcParsed;
+  }
+
+  // 2. Check if JSON format
+  if (trimmed.startsWith('[') && trimmed.endsWith(']')) {
+    try {
+      const jsonArr = JSON.parse(trimmed);
+      if (Array.isArray(jsonArr) && jsonArr.length > 0) {
+        return jsonArr.map(item => {
+          if (typeof item === 'string') return { text: item.trim(), duration: defaultDur };
+          return {
+            text: item.text || item.state || item.lyrics || '',
+            duration: parseInt(item.duration || item.dur) || defaultDur
+          };
+        }).filter(x => !!x.text);
+      }
+    } catch (e) {}
+  }
+
+  // 3. Line by line parsing: "Line text | duration" or plain lines
+  const lines = trimmed.split(/\r?\n/);
+  const result = [];
+
+  for (const line of lines) {
+    const clean = line.trim();
+    if (!clean) continue;
+    const withoutTags = clean.replace(/^\[[^\]]+\]\s*/, '');
+    if (!withoutTags) continue;
+
+    if (withoutTags.includes('|')) {
+      const parts = withoutTags.split('|');
+      const text = parts[0].trim();
+      const dur = parseInt(parts[1]?.trim(), 10) || defaultDur;
+      if (text) {
+        result.push({ text, duration: Math.max(2, Math.min(300, dur)) });
+      }
+    } else {
+      result.push({ text: withoutTags, duration: defaultDur });
+    }
+  }
+
+  return result;
+}
+
+async function handleFetchSpotifyTrackAndLyrics() {
+  const inputEl = document.getElementById('spotify-track-input');
+  const btn = document.getElementById('btn-fetch-spotify');
+  const url = inputEl?.value.trim();
+
+  if (!url) {
+    toast('⚠️ يُرجى إدخال رابط الأغنية من Spotify أولاً', 'error');
+    inputEl?.focus();
+    return;
+  }
+
+  if (!url.includes('spotify.com') && !url.includes('open.spotify.com')) {
+    toast('⚠️ رابط غير صالح، يجب أن يكون رابط من سبوتيفاي (مثل: open.spotify.com/track/...)', 'error');
+    return;
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> جاري جلب الأغنية...';
+  }
+
+  try {
+    toast('🔍 جاري استخراج تفاصيل الأغنية والغلاف من Spotify...', 'info');
+    const trackRes = await window.rpc.fetchSpotifyTrack(url);
+
+    if (!trackRes || !trackRes.success) {
+      toast('❌ فشل جلب بيانات الأغنية: ' + (trackRes?.error || 'تأكد من صحة الرابط أو اتصال الإنترنت'), 'error');
+      return;
+    }
+
+    cachedSpotifyTrack = trackRes;
+
+    // Update Result UI
+    const resultBox = document.getElementById('spotify-result-box');
+    const coverImg = document.getElementById('spotify-cover-preview');
+    const titleEl = document.getElementById('spotify-title-preview');
+    const artistEl = document.getElementById('spotify-artist-preview');
+    const lyricsStatus = document.getElementById('spotify-lyrics-status');
+    const linesCount = document.getElementById('spotify-lines-count');
+
+    if (coverImg) coverImg.src = trackRes.artworkUrl || '';
+    if (titleEl) titleEl.textContent = trackRes.cleanTitle || trackRes.title;
+    if (artistEl) artistEl.textContent = trackRes.artist ? `بواسطة: ${trackRes.artist}` : 'Spotify Track';
+    if (resultBox) resultBox.style.display = 'flex';
+
+    toast(`🎵 تم جلب: ${trackRes.cleanTitle} (${trackRes.artist || 'فنان'})`, 'success');
+
+    // Auto-fetch lyrics
+    if (lyricsStatus) {
+      lyricsStatus.innerHTML = '<span class="spinner"></span> جاري البحث عن الكلمات...';
+      lyricsStatus.style.background = 'rgba(99, 102, 241, 0.15)';
+      lyricsStatus.style.color = 'var(--accent2)';
+    }
+
+    const lyricsRes = await window.rpc.fetchSpotifyLyrics({
+      trackName: trackRes.cleanTitle,
+      artistName: trackRes.artist
+    });
+
+    cachedSpotifyLyrics = lyricsRes;
+
+    let frames = [];
+    if (lyricsRes && lyricsRes.success && lyricsRes.syncedLyrics) {
+      frames = parseLrc(lyricsRes.syncedLyrics);
+    } else if (lyricsRes && lyricsRes.success && lyricsRes.plainLyrics) {
+      frames = parseLyricsContent(lyricsRes.plainLyrics, 5);
+    }
+
+    if (frames.length > 0) {
+      if (lyricsStatus) {
+        lyricsStatus.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polyline points="20 6 9 17 4 12"/></svg> تم جلب الكلمات بنجاح!';
+        lyricsStatus.style.background = 'rgba(34, 197, 94, 0.15)';
+        lyricsStatus.style.color = '#22c55e';
+      }
+      if (linesCount) linesCount.textContent = `${frames.length} سطر متزامن 🎶`;
+      toast(`✨ تم العثور على ${frames.length} سطر من كلمات الأغنية المتزامنة!`, 'success');
+    } else {
+      if (lyricsStatus) {
+        lyricsStatus.innerHTML = '⚠️ لم تتوفر كلمات تلقائياً (يمكنك توليدها بالـ AI بنقرة)';
+        lyricsStatus.style.background = 'rgba(245, 158, 11, 0.15)';
+        lyricsStatus.style.color = '#f59e0b';
+      }
+      if (linesCount) linesCount.textContent = '0 سطر';
+      toast('ℹ️ لم نجد كلمات متزامنة في قاعدة البيانات، اضغط "تحويل لفريمات" لتوليدها عبر الذكاء الاصطناعي!', 'info');
+    }
+
+  } catch (err) {
+    toast('❌ حدث خطأ أثناء فحص الأغنية: ' + err.message, 'error');
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg> سحب الأغنية والكلمات';
+    }
+  }
+}
+
+function applySpotifyToRpcPresence() {
+  if (!cachedSpotifyTrack) {
+    toast('⚠️ يُرجى جلب أغنية من سبوتيفاي أولاً قبل التطبيق', 'error');
+    return;
+  }
+
+  const actSelect = document.getElementById('activityType');
+  if (actSelect) {
+    actSelect.value = '2';
+    onActivityTypeChange();
+  }
+
+  const detailsEl = document.getElementById('details');
+  const stateEl = document.getElementById('state');
+  if (detailsEl) detailsEl.value = cachedSpotifyTrack.cleanTitle || cachedSpotifyTrack.title;
+  if (stateEl) stateEl.value = cachedSpotifyTrack.artist ? `بواسطة ${cachedSpotifyTrack.artist}` : 'Spotify';
+
+  const largeKeyEl = document.getElementById('largeImageKey');
+  const largeTextEl = document.getElementById('largeImageText');
+  const smallKeyEl = document.getElementById('smallImageKey');
+  const smallTextEl = document.getElementById('smallImageText');
+
+  if (largeKeyEl) largeKeyEl.value = cachedSpotifyTrack.artworkUrl || '';
+  if (largeTextEl) largeTextEl.value = `${cachedSpotifyTrack.cleanTitle} - ${cachedSpotifyTrack.artist || 'Spotify'}`;
+  if (smallKeyEl) smallKeyEl.value = 'spotify';
+  if (smallTextEl) smallTextEl.value = 'Spotify Music';
+
+  const btn1Label = document.getElementById('button1Label');
+  const btn1Url = document.getElementById('button1Url');
+  const trackUrl = document.getElementById('spotify-track-input')?.value.trim() || 'https://open.spotify.com';
+  if (btn1Label) btn1Label.value = 'استمع على Spotify';
+  if (btn1Url) btn1Url.value = trackUrl;
+
+  updateCharCount('details');
+  updateCharCount('state');
+  updatePreview();
+  debouncedAutoSave(true);
+
+  if (isRpcActive && window.rpc?.updatePresence) {
+    window.rpc.updatePresence(collectConfig());
+    toast('🚀 تم تحديث حالة ديسكورد بأغنية Spotify الحالية!', 'success');
+  } else {
+    toast('✅ تم تطبيق إعدادات أغنية Spotify على الـ RPC بنجاح!', 'success');
+  }
+}
+
+function convertSpotifyLyricsToRotator() {
+  if (!cachedSpotifyTrack) {
+    toast('⚠️ يُرجى جلب أغنية من سبوتيفاي أولاً', 'error');
+    return;
+  }
+
+  let framesData = [];
+  if (cachedSpotifyLyrics?.syncedLyrics) {
+    framesData = parseLrc(cachedSpotifyLyrics.syncedLyrics);
+  } else if (cachedSpotifyLyrics?.plainLyrics) {
+    framesData = parseLyricsContent(cachedSpotifyLyrics.plainLyrics, 5);
+  }
+
+  if (framesData.length === 0) {
+    toast('💡 لا توجد كلمات مخزنة للأغنية، سنفتح لك أداة استيراد الكلمات والـ AI لتجهيزها فوراً!', 'info');
+    openLyricsImporterModal({
+      cleanTitle: cachedSpotifyTrack.cleanTitle,
+      artist: cachedSpotifyTrack.artist,
+      artworkUrl: cachedSpotifyTrack.artworkUrl
+    });
+    return;
+  }
+
+  const trackName = cachedSpotifyTrack.cleanTitle || cachedSpotifyTrack.title;
+  const artist = cachedSpotifyTrack.artist || '';
+  const cover = cachedSpotifyTrack.artworkUrl || '';
+
+  const newFrames = framesData.map((item, idx) => ({
+    name: `سطر ${idx + 1}: ${item.text.slice(0, 18)}...`,
+    details: `🎵 ${trackName}`,
+    state: item.text,
+    largeImageKey: cover,
+    largeImageText: `${trackName} - ${artist}`,
+    smallImageKey: 'spotify',
+    smallImageText: 'Spotify',
+    duration: Math.max(2, item.duration || 5)
+  }));
+
+  rotatorFramesList = newFrames;
+
+  const rotCheck = document.getElementById('rotationEnabled');
+  if (rotCheck) {
+    rotCheck.checked = true;
+    toggleRotatorUI();
+  }
+
+  renderRotatorFrames();
+  debouncedAutoSave(true);
+
+  toast(`🎉 تم تحويل كلمات أغنية (${trackName}) إلى ${newFrames.length} فريم متزامن!`, 'success');
+
+  const container = document.getElementById('rotator-frames-list');
+  if (container) {
+    container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+}
+
+// ══════════════════════════════════════════
+//  AI & LRC LYRICS IMPORTER
+// ══════════════════════════════════════════
+function openLyricsImporterModal(presetData = null) {
+  const data = presetData || cachedSpotifyTrack || {};
+
+  const detailsInput = document.getElementById('lyrics-details-input');
+  if (detailsInput && !detailsInput.value && data.cleanTitle) {
+    detailsInput.value = `🎵 ${data.cleanTitle}${data.artist ? ' - ' + data.artist : ''}`;
+  }
+
+  const largeImgInput = document.getElementById('lyrics-bulk-large-img');
+  if (largeImgInput && !largeImgInput.value && data.artworkUrl) {
+    largeImgInput.value = data.artworkUrl;
+    updateLyricsBulkThumb('large');
+  }
+
+  const smallImgInput = document.getElementById('lyrics-bulk-small-img');
+  if (smallImgInput && !smallImgInput.value) {
+    smallImgInput.value = 'spotify';
+    updateLyricsBulkThumb('small');
+  }
+
+  previewParsedLyrics();
+  showModal('modal-lyrics-importer');
+}
+
+function copyAiLyricsPrompt() {
+  const songName = cachedSpotifyTrack?.cleanTitle 
+    ? `${cachedSpotifyTrack.cleanTitle} - ${cachedSpotifyTrack.artist || ''}`
+    : '[اكتب هنا اسم الأغنية واسم الفنان]';
+
+  const promptText = `أريدك أن تساعدني في تجهيز كلمات أغنية مع التوقيت لتشغيلها في Discord Rich Presence.
+اسم الأغنية: ${songName}
+
+المطلوب منك:
+قم بإعطائي كلمات الأغنية مقسمة سطراً بسطر مع مدة ظهور كل سطر بالثواني بالصيغة التالية تماماً:
+[الكلمات] | [المدة بالثواني من 3 إلى 8 ثواني]
+
+مثال:
+أنا ماشي في دربي وعيني على الهدف | 4
+ولا يوم استسلمت ولا خطوة للخلف | 5
+كل ثانية تمر تصنع لي مجد جديد | 4
+
+أو بصيغة ملف LRC المتزامن مثل:
+[00:12.50] أنا ماشي في دربي وعيني على الهدف
+[00:16.80] ولا يوم استسلمت ولا خطوة للخلف
+
+ملاحظات هامة جداً:
+1. اجعل كل سطر مختصراً (أقل من 120 حرف) ليظهر بشكل كامل وجميل في الديسكورد.
+2. لا تكتب أي مقدمات أو شروحات إضافية لكي أنسخ النص مباشرة وألصقه في البرنامج.`;
+
+  navigator.clipboard.writeText(promptText).then(() => {
+    toast('📋 تم نسخ قالب أمر الـ AI بنجاح! الصقه الآن في ChatGPT أو Gemini', 'success');
+  }).catch(() => {
+    const t = document.createElement('textarea');
+    t.value = promptText;
+    document.body.appendChild(t);
+    t.select();
+    document.execCommand('copy');
+    document.body.removeChild(t);
+    toast('📋 تم نسخ قالب أمر الـ AI بنجاح! الصقه الآن في ChatGPT أو Gemini', 'success');
+  });
+}
+
+function handleLyricsFileInput(e) {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    const content = event.target.result;
+    const textInput = document.getElementById('lyrics-raw-input');
+    if (textInput) {
+      textInput.value = content;
+      previewParsedLyrics();
+      toast(`📁 تم قراءة الملف بنجاح (${file.name})`, 'success');
+    }
+  };
+  reader.readAsText(file, 'UTF-8');
+  e.target.value = '';
+}
+
+function updateLyricsBulkThumb(target) {
+  const input = document.getElementById(`lyrics-bulk-${target}-img`);
+  const thumb = document.getElementById(`lyrics-bulk-${target}-thumb`);
+  if (!input || !thumb) return;
+  const val = input.value.trim();
+  if (val && (val.startsWith('http://') || val.startsWith('https://') || val.startsWith('data:image'))) {
+    thumb.src = val;
+    thumb.style.display = 'block';
+  } else {
+    thumb.style.display = 'none';
+    thumb.src = '';
+  }
+}
+
+function triggerLyricsBulkUpload(target) {
+  const fileInput = document.getElementById(`lyrics-file-${target}`);
+  if (fileInput) fileInput.click();
+}
+
+async function handleLyricsBulkFileSelect(e, target) {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  toast('⏳ جاري رفع الصورة الموحدة...', 'info');
+  const reader = new FileReader();
+  reader.onloadend = async () => {
+    const base64 = reader.result;
+    const thumb = document.getElementById(`lyrics-bulk-${target}-thumb`);
+    const input = document.getElementById(`lyrics-bulk-${target}-img`);
+    if (thumb) {
+      thumb.src = base64;
+      thumb.style.display = 'block';
+    }
+
+    if (window.rpc?.uploadImage) {
+      try {
+        const res = await window.rpc.uploadImage(base64);
+        if (res?.success && res.url) {
+          if (input) input.value = res.url;
+          if (thumb) thumb.src = res.url;
+          previewParsedLyrics();
+          toast('✅ تم رفع الصورة الموحدة بنجاح', 'success');
+          return;
+        }
+      } catch (err) {}
+    }
+
+    if (input) input.value = base64;
+    previewParsedLyrics();
+    toast('✅ تم تعيين الصورة الموحدة محلياً', 'info');
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+}
+
+function previewParsedLyrics() {
+  const raw = document.getElementById('lyrics-raw-input')?.value || '';
+  const defDur = parseInt(document.getElementById('lyrics-default-dur')?.value) || 4;
+  parsedLyricsForImport = parseLyricsContent(raw, defDur);
+
+  const countEl = document.getElementById('lyrics-preview-count');
+  const listEl = document.getElementById('lyrics-preview-list');
+
+  if (countEl) countEl.textContent = parsedLyricsForImport.length;
+
+  if (!listEl) return;
+
+  if (parsedLyricsForImport.length === 0) {
+    listEl.innerHTML = '<div style="font-size:11px;color:var(--muted);text-align:center;padding:12px;">قم بلصق الكلمات أو رفع ملف لمعاينة الفريمات قبل التوليد</div>';
+    return;
+  }
+
+  listEl.innerHTML = parsedLyricsForImport.slice(0, 50).map((item, idx) => `
+    <div class="lyrics-preview-item">
+      <div style="display:flex;align-items:center;gap:8px;overflow:hidden;flex:1;">
+        <span style="font-size:10px;font-weight:700;color:var(--accent2);width:18px;text-align:center;">${idx + 1}</span>
+        <span style="color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(item.text)}</span>
+      </div>
+      <span style="font-size:10px;font-weight:700;background:rgba(99,102,241,0.15);color:var(--accent2);padding:2px 6px;border-radius:4px;flex-shrink:0;">
+        ⏱ ${item.duration}ث
+      </span>
+    </div>
+  `).join('') + (parsedLyricsForImport.length > 50 ? `<div style="font-size:10px;color:var(--muted);text-align:center;padding:4px;">... بالإضافة إلى ${parsedLyricsForImport.length - 50} سطر آخر</div>` : '');
+}
+
+function executeLyricsImport(replaceExisting = false) {
+  if (!parsedLyricsForImport || parsedLyricsForImport.length === 0) {
+    previewParsedLyrics();
+  }
+
+  if (!parsedLyricsForImport || parsedLyricsForImport.length === 0) {
+    toast('⚠️ يُرجى لصق الكلمات أو رفع ملف صالح أولاً لمعاينتها وتوليد الفريمات', 'error');
+    return;
+  }
+
+  const detailsVal = document.getElementById('lyrics-details-input')?.value.trim() || (cachedSpotifyTrack ? `🎵 ${cachedSpotifyTrack.cleanTitle}` : '🎵 كلمات الأغنية');
+  const bulkLarge = document.getElementById('lyrics-bulk-large-img')?.value.trim() || (cachedSpotifyTrack?.artworkUrl || '');
+  const bulkSmall = document.getElementById('lyrics-bulk-small-img')?.value.trim() || 'spotify';
+
+  const generatedFrames = parsedLyricsForImport.map((item, idx) => ({
+    name: `سطر ${idx + 1}: ${item.text.slice(0, 16)}...`,
+    details: detailsVal,
+    state: item.text,
+    largeImageKey: bulkLarge,
+    largeImageText: detailsVal,
+    smallImageKey: bulkSmall,
+    smallImageText: 'Naml Music',
+    duration: Math.max(2, item.duration || 4)
+  }));
+
+  if (replaceExisting) {
+    rotatorFramesList = generatedFrames;
+  } else {
+    rotatorFramesList = rotatorFramesList.concat(generatedFrames);
+  }
+
+  const rotCheck = document.getElementById('rotationEnabled');
+  if (rotCheck) {
+    rotCheck.checked = true;
+    toggleRotatorUI();
+  }
+
+  renderRotatorFrames();
+  debouncedAutoSave(true);
+  closeModal('modal-lyrics-importer');
+
+  toast(`🎉 تم توليد ${generatedFrames.length} فريم بنجاح!`, 'success');
+
+  const framesArea = document.getElementById('rotator-frames-list');
+  if (framesArea) {
+    framesArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+}
+
 

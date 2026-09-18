@@ -1157,6 +1157,171 @@ ipcMain.handle('discord-send-webhook', async (_e, { webhookUrl, payload }) => {
   });
 });
 
+ipcMain.handle('spotify-fetch-track', async (_e, rawUrl) => {
+  if (!rawUrl || typeof rawUrl !== 'string') {
+    return { success: false, error: 'الرابط غير صالح' };
+  }
+  let cleanUrl = rawUrl.trim();
+  const match = cleanUrl.match(/track[/:]([a-zA-Z0-9]+)/);
+  if (match && match[1]) {
+    cleanUrl = `https://open.spotify.com/track/${match[1]}`;
+  } else if (!cleanUrl.startsWith('https://')) {
+    return { success: false, error: 'يُرجى إدخال رابط Spotify صحيح (مثال: https://open.spotify.com/track/...)' };
+  }
+
+  return new Promise((resolve) => {
+    try {
+      const oembedUrl = `https://open.spotify.com/oembed?url=${encodeURIComponent(cleanUrl)}`;
+      const req = https.get(oembedUrl, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Naml-RPC/3.0' },
+        timeout: 8000
+      }, (res) => {
+        let body = '';
+        res.on('data', chunk => body += chunk);
+        res.on('end', () => {
+          if (res.statusCode >= 200 && res.statusCode < 300) {
+            try {
+              const data = JSON.parse(body);
+              let title = data.title || '';
+              let artist = '';
+              if (title.includes(' - ')) {
+                const parts = title.split(' - ');
+                title = parts[0].trim();
+                artist = parts.slice(1).join(' - ').trim();
+              } else if (title.includes(' by ')) {
+                const parts = title.split(' by ');
+                title = parts[0].trim();
+                artist = parts[1].trim();
+              }
+              resolve({
+                success: true,
+                title: data.title,
+                cleanTitle: title,
+                artist: artist,
+                artworkUrl: data.thumbnail_url || '',
+                trackUrl: cleanUrl
+              });
+            } catch (pErr) {
+              resolve({ success: false, error: 'تعذر قراءة بيانات الأغنية' });
+            }
+          } else {
+            resolve({ success: false, error: `رمز الخطأ من سبوتيفاي: ${res.statusCode}` });
+          }
+        });
+      });
+      req.on('error', (e) => resolve({ success: false, error: e.message }));
+      req.on('timeout', () => { req.destroy(); resolve({ success: false, error: 'انتهت مهلة الاتصال بسبوتيفاي' }); });
+    } catch (err) {
+      resolve({ success: false, error: err.message });
+    }
+  });
+});
+
+ipcMain.handle('spotify-fetch-lyrics', async (_e, { query, trackName, artistName }) => {
+  const searchTerm = (query || `${trackName || ''} ${artistName || ''}`).trim();
+  if (!searchTerm) {
+    return { success: false, error: 'اسم الأغنية مفقود' };
+  }
+
+  const searchLrclib = (q) => {
+    return new Promise((resolve) => {
+      try {
+        const url = `https://lrclib.net/api/search?q=${encodeURIComponent(q)}`;
+        const req = https.get(url, {
+          headers: { 'User-Agent': 'Naml-RPC/3.0 (https://github.com/sloom555555/naml-rpc)' },
+          timeout: 7000
+        }, (res) => {
+          let body = '';
+          res.on('data', chunk => body += chunk);
+          res.on('end', () => {
+            if (res.statusCode === 200) {
+              try {
+                const list = JSON.parse(body);
+                if (Array.isArray(list) && list.length > 0) {
+                  const synced = list.find(item => item.syncedLyrics && item.syncedLyrics.length > 20);
+                  const chosen = synced || list[0];
+                  resolve({
+                    success: true,
+                    syncedLyrics: chosen.syncedLyrics || null,
+                    plainLyrics: chosen.plainLyrics || null,
+                    trackName: chosen.trackName || trackName,
+                    artistName: chosen.artistName || artistName,
+                    duration: chosen.duration || 0
+                  });
+                  return;
+                }
+              } catch (e) {}
+            }
+            resolve({ success: false });
+          });
+        });
+        req.on('error', () => resolve({ success: false }));
+        req.on('timeout', () => { req.destroy(); resolve({ success: false }); });
+      } catch (e) {
+        resolve({ success: false });
+      }
+    });
+  };
+
+  const getExactLrclib = (track, artist) => {
+    return new Promise((resolve) => {
+      try {
+        const url = `https://lrclib.net/api/get?track_name=${encodeURIComponent(track)}&artist_name=${encodeURIComponent(artist || '')}`;
+        const req = https.get(url, {
+          headers: { 'User-Agent': 'Naml-RPC/3.0 (https://github.com/sloom555555/naml-rpc)' },
+          timeout: 7000
+        }, (res) => {
+          let body = '';
+          res.on('data', chunk => body += chunk);
+          res.on('end', () => {
+            if (res.statusCode === 200) {
+              try {
+                const item = JSON.parse(body);
+                if (item && (item.syncedLyrics || item.plainLyrics)) {
+                  resolve({
+                    success: true,
+                    syncedLyrics: item.syncedLyrics || null,
+                    plainLyrics: item.plainLyrics || null,
+                    trackName: item.trackName || track,
+                    artistName: item.artistName || artist,
+                    duration: item.duration || 0
+                  });
+                  return;
+                }
+              } catch (e) {}
+            }
+            resolve({ success: false });
+          });
+        });
+        req.on('error', () => resolve({ success: false }));
+        req.on('timeout', () => { req.destroy(); resolve({ success: false }); });
+      } catch (e) {
+        resolve({ success: false });
+      }
+    });
+  };
+
+  if (trackName && artistName) {
+    const exactRes = await getExactLrclib(trackName, artistName);
+    if (exactRes && exactRes.success && (exactRes.syncedLyrics || exactRes.plainLyrics)) {
+      return exactRes;
+    }
+  }
+
+  const searchRes = await searchLrclib(searchTerm);
+  if (searchRes && searchRes.success && (searchRes.syncedLyrics || searchRes.plainLyrics)) {
+    return searchRes;
+  }
+
+  const stripped = searchTerm.replace(/\(.*?\)|\[.*?\]|-.*$/g, '').trim();
+  if (stripped && stripped !== searchTerm) {
+    const strippedRes = await searchLrclib(stripped);
+    if (strippedRes && strippedRes.success) return strippedRes;
+  }
+
+  return { success: false, error: 'لم يتم العثور على كلمات مسجلة لهذه الأغنية في قاعدة البيانات' };
+});
+
 ipcMain.handle('import-backup', async () => {
   try {
     const { filePaths, canceled } = await dialog.showOpenDialog(mainWindow, {
