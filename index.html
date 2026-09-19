@@ -359,403 +359,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-/* ── Webhook Studio & Embed Styling ── */
-.wh-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 14px;
-}
-@media (min-width: 800px) {
-  .wh-grid {
-    grid-template-columns: 1.1fr 0.9fr;
-  }
-}
-.wh-embed-preview {
-  background: #313338;
-  border: 1px solid #1e1f22;
-  border-radius: 8px;
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-  direction: rtl;
-  text-align: right;
-}
-.wh-prev-msg-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.wh-prev-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  object-fit: cover;
-  background: #1e1f22;
-}
-.wh-prev-user {
-  font-size: 14px;
-  font-weight: 700;
-  color: #f2f3f5;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.wh-bot-tag {
-  background: #5865f2;
-  color: #fff;
-  font-size: 10px;
-  font-weight: 700;
-  padding: 1px 4px;
-  border-radius: 4px;
-  line-height: 1.2;
-}
-.wh-prev-time {
-  font-size: 11px;
-  color: #949ba4;
-}
-.wh-prev-text {
-  font-size: 13px;
-  color: #dbdee1;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-.wh-embed-card {
-  background: #2b2d31;
-  border-right: 4px solid #5865f2;
-  border-left: none;
-  border-radius: 4px;
-  padding: 12px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.wh-embed-author {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 12px;
-  font-weight: 700;
-  color: #f2f3f5;
-}
-.wh-embed-author-img {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-.wh-embed-title {
-  font-size: 14px;
-  font-weight: 700;
-  color: #00a8fc;
-  text-decoration: none;
-}
-.wh-embed-desc {
-  font-size: 12px;
-  color: #dbdee1;
-  white-space: pre-wrap;
-  line-height: 1.4;
-}
-.wh-embed-fields {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-  gap: 8px;
-  margin-top: 4px;
-}
-.wh-field-name {
-  font-size: 12px;
-  font-weight: 700;
-  color: #f2f3f5;
-}
-.wh-field-val {
-  font-size: 12px;
-  color: #dbdee1;
-  white-space: pre-wrap;
-}
-.wh-embed-img {
-  max-width: 100%;
-  max-height: 240px;
-  border-radius: 4px;
-  object-fit: cover;
-  margin-top: 4px;
-}
-.wh-embed-thumb {
-  width: 54px;
-  height: 54px;
-  border-radius: 4px;
-  object-fit: cover;
-  float: left;
-  margin-right: 8px;
-}
-.wh-embed-footer {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  color: #949ba4;
-  margin-top: 4px;
-}
-.wh-embed-footer-img {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-.color-picker-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.color-swatch {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  cursor: pointer;
-  border: 2px solid var(--border);
-  transition: transform 0.15s;
-}
-.color-swatch:hover {
-  transform: scale(1.15);
-}
-.wh-field-row {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 8px 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-bottom: 6px;
-}
-/* ── Live Rotator Simulation Bar ── */
-.sim-bar {
-  width: 100%;
-  max-width: 440px;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 10px 14px;
-  margin-bottom: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.25);
-  position: relative;
-  overflow: hidden;
-}
-.sim-bar-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.sim-info {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.sim-status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--muted);
-  box-shadow: 0 0 6px rgba(100,116,139,0.4);
-  transition: all 0.3s;
-}
-.sim-status-dot.active {
-  background: var(--accent2);
-  box-shadow: 0 0 8px var(--accent);
-  animation: pulse 1.5s infinite;
-}
-.sim-title {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text);
-}
-.sim-sub {
-  font-size: 10px;
-  color: var(--muted);
-}
-.sim-controls {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.sim-btn {
-  background: var(--surface3);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  color: var(--text);
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.sim-btn:hover {
-  background: var(--surface1);
-  border-color: var(--accent2);
-  color: var(--accent2);
-}
-.sim-btn-play {
-  width: 32px;
-  height: 32px;
-  background: rgba(99, 102, 241, 0.15);
-  border-color: rgba(99, 102, 241, 0.4);
-  color: var(--accent2);
-}
-.sim-btn-play:hover {
-  background: var(--accent);
-  color: #fff;
-}
-.sim-progress-track {
-  width: 100%;
-  height: 3px;
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: 2px;
-  overflow: hidden;
-}
-.sim-progress-fill {
-  height: 100%;
-  width: 0%;
-  background: linear-gradient(90deg, var(--accent), var(--accent2));
-}
-/* ── Layout & Full Scroll Fix ── */
-#content {
-  flex: 1 !important;
-  min-height: 0 !important;
-  display: flex !important;
-  flex-direction: column !important;
-  overflow: hidden !important;
-  position: relative !important;
-}
-.tab-panel {
-  flex: 1 !important;
-  min-height: 0 !important;
-  height: 100% !important;
-  overflow: hidden !important;
-  display: none;
-  flex-direction: column;
-}
-.tab-panel.active {
-  display: flex !important;
-}
-.scroll-area {
-  flex: 1 !important;
-  min-height: 0 !important;
-  height: 100% !important;
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-  padding: 14px 14px 120px 14px !important;
-  box-sizing: border-box !important;
-  scrollbar-width: thin !important;
-  scrollbar-color: rgba(99, 102, 241, 0.3) transparent !important;
-}
-.scroll-area::-webkit-scrollbar {
-  width: 6px;
-}
-.scroll-area::-webkit-scrollbar-thumb {
-  background: rgba(99, 102, 241, 0.25);
-  border-radius: 4px;
-}
-.scroll-area::-webkit-scrollbar-thumb:hover {
-  background: rgba(99, 102, 241, 0.5);
-}
-
-/* ── Modern 3D Interactive UI Polish ── */
-.btn-3d {
-  position: relative;
-  border-radius: 8px;
-  font-weight: 700;
-  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  cursor: pointer;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 8px 14px;
-  user-select: none;
-}
-.btn-3d:active {
-  transform: translateY(1px) scale(0.98);
-}
-.btn-3d-green {
-  background: linear-gradient(135deg, #10b981, #059669);
-  color: #fff;
-  border-color: rgba(16, 185, 129, 0.4);
-  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);
-}
-.btn-3d-green:hover {
-  filter: brightness(1.1);
-  box-shadow: 0 6px 18px rgba(16, 185, 129, 0.35);
-}
-
-/* ── Spotify Card & Lyrics Importer Styles ── */
-.spotify-track-card {
-  background: linear-gradient(135deg, rgba(20, 30, 25, 0.9), rgba(15, 20, 32, 0.95));
-  border: 1px solid rgba(34, 197, 94, 0.25);
-  border-radius: var(--radius);
-  padding: 14px;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-}
-.spotify-track-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 90px;
-  height: 90px;
-  background: radial-gradient(circle, rgba(34, 197, 94, 0.12) 0%, transparent 70%);
-  pointer-events: none;
-}
-.spotify-result-box {
-  background: var(--surface2);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  padding: 10px;
-  margin-top: 10px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.spotify-cover-img {
-  width: 52px;
-  height: 52px;
-  border-radius: 6px;
-  object-fit: cover;
-  background: var(--surface3);
-  border: 1px solid var(--border);
-  flex-shrink: 0;
-}
-.spotify-lyrics-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 10.5px;
-  font-weight: 700;
-  padding: 2px 7px;
-  border-radius: 6px;
-  background: rgba(34, 197, 94, 0.15);
-  color: #22c55e;
-}
-.lyrics-preview-item {
-  background: var(--surface3);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 6px 10px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  font-size: 11.5px;
-}
 </style>
 </head>
 <body>
@@ -796,10 +399,6 @@
   <button class="tab" data-tab="bots" onclick="switchTab('bots')">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
     <span data-i18n="tab_bots">التوكنات</span>
-  </button>
-  <button class="tab" data-tab="webhook" onclick="switchTab('webhook')">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-    <span data-i18n="tab_webhook">ويب هوك</span>
   </button>
   <button class="tab" data-tab="preview" onclick="switchTab('preview')">
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -846,90 +445,28 @@
     </div>
 
     <div class="scroll-area">
-      <!-- ── CARD 1: تطبيق ديسكورد ونوع النشاط ── -->
+      <!-- Client ID -->
       <div class="card">
         <div class="card-title">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          إعدادات التطبيق والنشاط في ديسكورد (Application & Activity)
+          معرّف التطبيق
         </div>
-        <div class="row2">
-          <div class="field">
-            <label>معرّف التطبيق (Client ID / App ID)</label>
-            <div class="input-row">
-              <input type="text" id="clientId" placeholder="1533169274401849414" oninput="debouncedPreview()"/>
-              <button type="button" class="btn-link" onclick="window.rpc.openExternal('https://discord.com/developers/applications')" title="فتح بوابة المطورين (Discord Developer Portal)">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-              </button>
-            </div>
-          </div>
-          <div class="field">
-            <label>نوع الحالة والنشاط (Activity Type)</label>
-            <select id="activityType" onchange="onActivityTypeChange(); debouncedPreview(); debouncedAutoSave(true)" style="background:var(--surface3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:13px;padding:8px 11px;width:100%;outline:none">
-              <option value="0" selected>🎮 يلعب (Playing)</option>
-              <option value="1">🔴 يبث مباشر (Streaming - Twitch/YouTube)</option>
-              <option value="2">🎧 يستمع إلى (Listening to)</option>
-              <option value="3">📺 يشاهد (Watching)</option>
-              <option value="5">🏆 يتنافس في (Competing in)</option>
-            </select>
-          </div>
-        </div>
-        <div class="field" id="stream-url-field" style="display:none;margin-top:8px;">
-          <label>رابط البث المباشر (Twitch أو YouTube Live)</label>
-          <input type="text" id="streamUrl" placeholder="https://twitch.tv/..." oninput="debouncedPreview(); debouncedAutoSave(true)"/>
-        </div>
-      </div>
-
-      <!-- ── CARD 2: سحب أغنية وكلمات سبوتيفاي تلقائياً ── -->
-      <div class="spotify-track-card">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-          <div style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:800;color:#22c55e;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424c-.18.295-.563.387-.857.207-2.35-1.434-5.308-1.758-8.793-.963-.335.077-.67-.133-.746-.469-.077-.334.132-.67.467-.746 3.808-.871 7.077-.496 9.721 1.115.295.18.388.563.208.856zm1.224-2.723c-.227.37-.714.485-1.083.257-2.69-1.653-6.79-2.133-9.97-1.168-.413.125-.852-.107-.978-.521-.125-.414.108-.853.522-.978 3.633-1.103 8.147-.568 11.252 1.327.37.227.485.714.257 1.083zm.105-2.835C14.692 8.95 9.375 8.775 6.297 9.71c-.494.15-1.018-.13-1.168-.624-.15-.495.13-1.018.625-1.168 3.532-1.072 9.404-.866 13.115 1.338.445.264.59.838.327 1.282-.264.443-.838.59-1.281.327z"/></svg>
-            سحب أغنية وكلمات سبوتيفاي تلقائياً (Spotify Track & Lyrics)
-          </div>
-          <span style="font-size:10px;color:var(--muted);background:rgba(255,255,255,0.06);padding:2px 7px;border-radius:10px;">سحب الغلاف والكلمات</span>
-        </div>
-
         <div class="field">
-          <label>ضع رابط أي أغنية من سبوتيفاي (Spotify Track Link):</label>
-          <div style="display:flex;gap:6px;">
-            <input type="text" id="spotify-track-input" placeholder="https://open.spotify.com/track/..." style="background:var(--surface2);border-color:rgba(34,197,94,0.3);flex:1;"/>
-            <button type="button" class="btn-3d btn-3d-green" id="btn-fetch-spotify" onclick="handleFetchSpotifyTrackAndLyrics()">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
-              سحب الأغنية والكلمات
-            </button>
-          </div>
-        </div>
-
-        <!-- Spotify Track Result Box -->
-        <div id="spotify-result-box" class="spotify-result-box" style="display:none;">
-          <img id="spotify-cover-preview" class="spotify-cover-img" src="" alt="Album Cover"/>
-          <div style="flex:1;min-width:0;">
-            <div id="spotify-title-preview" style="font-weight:700;font-size:13px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">اسم الأغنية</div>
-            <div id="spotify-artist-preview" style="font-size:11px;color:var(--muted);margin-top:2px;">اسم الفنان</div>
-            <div style="margin-top:4px;display:flex;align-items:center;gap:6px;">
-              <span id="spotify-lyrics-status" class="spotify-lyrics-badge">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polyline points="20 6 9 17 4 12"/></svg>
-                تم جلب الكلمات المتزامنة
-              </span>
-              <span id="spotify-lines-count" style="font-size:10px;color:var(--muted);">0 سطر</span>
-            </div>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:5px;">
-            <button type="button" class="btn-sm btn-3d-green" onclick="applySpotifyToRpcPresence()" title="تطبيق كحالة استماع فورية في ديسكورد">
-              🎧 تطبيق على الـ RPC
-            </button>
-            <button type="button" class="btn-sm btn-3d-purple" id="btn-spotify-to-rotator" onclick="convertSpotifyLyricsToRotator()" title="تحويل الكلمات المتزامنة إلى فريمات متحركة تمشي مع الأغنية">
-              🔄 تحويل لفريمات متحركة
+          <label>Client ID / App ID</label>
+          <div class="input-row">
+            <input type="text" id="clientId" placeholder="1533169274401849414" oninput="debouncedPreview()"/>
+            <button class="btn-link" onclick="window.rpc.openExternal('https://discord.com/developers/applications')" title="فتح Developer Portal">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
             </button>
           </div>
         </div>
       </div>
 
-      <!-- ── CARD 3: النصوص والحالة ── -->
+      <!-- Details & State -->
       <div class="card">
         <div class="card-title">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-          النصوص وحالة الـ RPC (Details & State)
+          النص
         </div>
         <div class="row2">
           <div class="field">
@@ -945,54 +482,37 @@
         </div>
       </div>
 
-      <!-- ── CARD 4: الصور والأيقونات ── -->
+      <!-- Images -->
       <div class="card">
         <div class="card-title">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-          الصور والأيقونات (Visual Assets & Quick Chips)
+          الصور
         </div>
-        <div class="row2">
-          <!-- Large -->
-          <div class="field">
-            <label>الصورة الكبيرة (Large Image)</label>
-            <div class="img-row">
-              <img class="img-thumb" id="large-thumb" src="" alt=""/>
-              <input type="text" id="largeImageKey" placeholder="رابط أو مفتاح الصورة..." oninput="onImageKeyInput('large')"/>
-              <button type="button" class="btn-upload" onclick="document.getElementById('large-file').click()" title="رفع صورة من جهازك">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              </button>
-              <input type="file" id="large-file" accept="image/*" style="display:none" onchange="handleFileUpload(event,'large')"/>
-            </div>
-            <input type="text" id="largeImageText" placeholder="نص تلميح الصورة الكبيرة..." style="margin-top:6px" oninput="debouncedPreview()"/>
+        <!-- Large -->
+        <div class="field">
+          <label>الصورة الكبيرة</label>
+          <div class="img-row">
+            <img class="img-thumb" id="large-thumb" src="" alt=""/>
+            <input type="text" id="largeImageKey" placeholder="رابط أو مفتاح..." oninput="onImageKeyInput('large')"/>
+            <button class="btn-upload" onclick="document.getElementById('large-file').click()" title="رفع من جهازك">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </button>
+            <input type="file" id="large-file" accept="image/*" style="display:none" onchange="handleFileUpload(event,'large')"/>
           </div>
-          <!-- Small -->
-          <div class="field">
-            <label>الصورة الصغيرة (Small Icon)</label>
-            <div class="img-row">
-              <img class="img-thumb" id="small-thumb" src="" alt=""/>
-              <input type="text" id="smallImageKey" placeholder="رابط أو مفتاح الصورة..." oninput="onImageKeyInput('small')"/>
-              <button type="button" class="btn-upload" onclick="document.getElementById('small-file').click()" title="رفع صورة من جهازك">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              </button>
-              <input type="file" id="small-file" accept="image/*" style="display:none" onchange="handleFileUpload(event,'small')"/>
-            </div>
-            <input type="text" id="smallImageText" placeholder="نص تلميح الصورة الصغيرة..." style="margin-top:6px" oninput="debouncedPreview()"/>
-          </div>
+          <input type="text" id="largeImageText" placeholder="نص الصورة الكبيرة..." style="margin-top:6px" oninput="debouncedPreview()"/>
         </div>
-
-        <!-- Quick Icon Presets -->
-        <div style="margin-top:10px;">
-          <div style="font-size:11px;color:var(--muted);margin-bottom:6px;font-weight:600;">أيقونات جاهزة بنقرة واحدة (بدون كتابة):</div>
-          <div class="quick-icon-chips" style="display:flex;flex-wrap:wrap;gap:6px;">
-            <button type="button" class="icon-chip" onclick="selectQuickRpcIcon('large', 'https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png')">Discord</button>
-            <button type="button" class="icon-chip" onclick="selectQuickRpcIcon('large', 'https://cdn-icons-png.flaticon.com/512/5968/5968819.png')">Twitch</button>
-            <button type="button" class="icon-chip" onclick="selectQuickRpcIcon('large', 'https://cdn-icons-png.flaticon.com/512/1384/1384060.png')">YouTube</button>
-            <button type="button" class="icon-chip" onclick="selectQuickRpcIcon('large', 'https://cdn-icons-png.flaticon.com/512/174/174872.png')">Spotify</button>
-            <button type="button" class="icon-chip" onclick="selectQuickRpcIcon('large', 'https://cdn-icons-png.flaticon.com/512/906/906324.png')">VS Code</button>
-            <button type="button" class="icon-chip" onclick="selectQuickRpcIcon('large', 'https://cdn-icons-png.flaticon.com/512/686/686589.png')">Gaming 🎮</button>
-            <button type="button" class="icon-chip" onclick="selectQuickRpcIcon('large', 'https://cdn-icons-png.flaticon.com/512/785/785116.png')">Fire 🔥</button>
-            <button type="button" class="icon-chip" onclick="selectQuickRpcIcon('large', 'https://cdn-icons-png.flaticon.com/512/1828/1828884.png')">Star ⭐</button>
+        <!-- Small -->
+        <div class="field" style="margin-top:10px">
+          <label>الصورة الصغيرة</label>
+          <div class="img-row">
+            <img class="img-thumb" id="small-thumb" src="" alt=""/>
+            <input type="text" id="smallImageKey" placeholder="رابط أو مفتاح..." oninput="onImageKeyInput('small')"/>
+            <button class="btn-upload" onclick="document.getElementById('small-file').click()" title="رفع من جهازك">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </button>
+            <input type="file" id="small-file" accept="image/*" style="display:none" onchange="handleFileUpload(event,'small')"/>
           </div>
+          <input type="text" id="smallImageText" placeholder="نص الصورة الصغيرة..." style="margin-top:6px" oninput="debouncedPreview()"/>
         </div>
       </div>
 
@@ -1129,9 +649,9 @@
         <div id="rotator-settings-area" style="display:none;margin-top:12px">
           <div class="row2">
             <div class="field">
-              <label data-i18n="rotator_interval_label">سرعة التنقل الافتراضية</label>
+              <label data-i18n="rotator_interval_label">سرعة التنقل بين الفريمات</label>
               <select id="rotationInterval" onchange="debouncedAutoSave(true)" style="background:var(--surface3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:13px;padding:8px 11px;width:100%;outline:none">
-                <option value="3">⚡ 3 ثواني (سريع)</option>
+                <option value="3">⚡ 3 ثواني (سريع جداً)</option>
                 <option value="5" selected>⏱ 5 ثواني (مثالي وموصى به)</option>
                 <option value="10">🕒 10 ثواني (مستقر)</option>
                 <option value="15">🧘 15 ثانية (هادئ وخفيف)</option>
@@ -1151,34 +671,9 @@
             </div>
           </div>
 
-          <div class="row2" style="margin-top:8px;">
-            <div class="field">
-              <label>نمط التنقل بين الفريمات</label>
-              <select id="rotationMode" onchange="debouncedAutoSave(true)" style="background:var(--surface3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:13px;padding:8px 11px;width:100%;outline:none">
-                <option value="sequential" selected>🔄 متسلسل (1 ← 2 ← 3)</option>
-                <option value="random">🎲 عشوائي (Random)</option>
-                <option value="pingpong">🏓 ذهاب وإياب (Ping-Pong)</option>
-              </select>
-            </div>
-            <div class="field" style="display:flex;flex-direction:column;justify-content:center;">
-              <div class="toggle-row" style="margin-top:14px;padding:0;">
-                <div>
-                  <div class="toggle-label" style="font-size:12px;">مزامنة الموسيقى الحية 🎵</div>
-                  <div class="toggle-hint" style="font-size:10px;">إظهار الأغنية تلقائياً من Spotify/الوسائط</div>
-                </div>
-                <label class="switch"><input type="checkbox" id="liveMediaEnabled" onchange="debouncedAutoSave(true)"/><span class="slider"></span></label>
-              </div>
-            </div>
-          </div>
-
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;margin-bottom:8px;flex-wrap:wrap;gap:6px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;margin-bottom:8px">
             <span style="font-size:12px;font-weight:800;color:var(--accent2)" data-i18n="frames_list_title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg> فريمات المشهد المتحرك:</span>
-            <div style="display:flex;gap:6px;align-items:center;">
-              <button type="button" class="btn-sm btn-3d-green" onclick="openLyricsImporterModal()" title="استيراد كلمات أغنية أو نص جاهز وتوليد الفريمات تلقائياً عبر الذكاء الاصطناعي أو ملف LRC">
-                🤖 استيراد كلمات (AI & LRC)
-              </button>
-              <button type="button" class="btn-sm btn-3d-purple" onclick="openAddFrameModal()" data-i18n="btn_add_frame">+ إضافة فريم جديد</button>
-            </div>
+            <button class="btn-sm btn-3d-purple" onclick="openAddFrameModal()" data-i18n="btn_add_frame">+ إضافة فريم جديد</button>
           </div>
 
           <div id="rotator-frames-list" style="display:flex;flex-direction:column;gap:6px"></div>
@@ -1393,242 +888,6 @@
       </div>
     </div>
   </div>
-
-  <!-- ── TAB: WEBHOOK ── -->
-  <div class="tab-panel" id="panel-webhook">
-    <div class="scroll-area">
-      <div class="section-header">
-        <div>
-          <div class="section-title">استوديو إرسال الويب هوك (Discord Webhook Studio)</div>
-          <div class="section-sub">صمّم Embeds احترافية وأرسلها فورياً لأي روم في سيرفرك بضغطة زر واحدة</div>
-        </div>
-        <div style="display:flex;gap:6px;">
-          <button class="btn-3d btn-3d-blue" onclick="copyWebhookJson()" title="نسخ كود الـ JSON">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-            نسخ JSON
-          </button>
-          <button class="btn-3d btn-3d-purple" onclick="sendDiscordWebhook()" id="btn-send-webhook">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-            إرسال الآن 🚀
-          </button>
-        </div>
-      </div>
-
-      <!-- Quick Templates -->
-      <div class="card" style="margin-bottom:12px;padding:10px 14px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-          <span style="font-size:12px;font-weight:700;color:var(--text);">قوالب جاهزة سريعة (اضغط لتطبيق القالب بنقرة):</span>
-          <button type="button" class="btn-sm" onclick="resetWebhookForm()" style="font-size:11px;color:var(--muted);">مسح الكل ↺</button>
-        </div>
-        <div style="display:flex;flex-wrap:wrap;gap:6px;">
-          <button type="button" class="icon-chip" onclick="applyWebhookTemplate('announcement')">📢 إعلان سيرفر رسمي</button>
-          <button type="button" class="icon-chip" onclick="applyWebhookTemplate('rules')">📜 قوانين وشروط السيرفر</button>
-          <button type="button" class="icon-chip" onclick="applyWebhookTemplate('update')">🚀 تحديث جديد ومميزات (v3.0.0)</button>
-          <button type="button" class="icon-chip" onclick="applyWebhookTemplate('welcome')">👋 رسالة ترحيب بالعضو الجديد</button>
-        </div>
-      </div>
-
-      <div class="wh-grid">
-        <!-- LEFT: BUILDER CONTROLS -->
-        <div style="display:flex;flex-direction:column;gap:12px;">
-
-          <!-- Webhook Endpoint & Sender Info -->
-          <div class="card">
-            <div class="card-title">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-              بيانات الويب هوك (Webhook Settings)
-            </div>
-            <div class="field">
-              <label>رابط الويب هوك (Webhook URL) *</label>
-              <input type="text" id="wh-url" placeholder="https://discord.com/api/webhooks/..." oninput="updateWebhookEmbedPreview(); debouncedAutoSave(true)"/>
-            </div>
-            <div class="row2">
-              <div class="field">
-                <label>اسم البوت المخصص (Username)</label>
-                <input type="text" id="wh-username" placeholder="مثال: نامل بوت" oninput="updateWebhookEmbedPreview(); debouncedAutoSave(true)"/>
-              </div>
-              <div class="field">
-                <label>رابط صورة البوت (Avatar URL)</label>
-                <input type="text" id="wh-avatar" placeholder="https://..." oninput="updateWebhookEmbedPreview(); debouncedAutoSave(true)"/>
-              </div>
-            </div>
-          </div>
-
-          <!-- Message Content (Regular text above embed) -->
-          <div class="card">
-            <div class="card-title">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-              محتوى الرسالة العادية (Message Content)
-            </div>
-            <div class="field">
-              <label>نص المنشن أو التنبيه (اختياري - مثلاً @everyone)</label>
-              <textarea id="wh-content" rows="2" placeholder="اكتب نصاً يظهر خارج الـ Embed أو اتركه فارغاً..." oninput="updateWebhookEmbedPreview(); debouncedAutoSave(true)" style="background:var(--surface3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:13px;padding:8px 11px;width:100%;outline:none;resize:none"></textarea>
-            </div>
-          </div>
-
-          <!-- Embed Details -->
-          <div class="card">
-            <div class="card-title">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
-              محتوى وتصميم الـ Embed
-            </div>
-
-            <!-- Author -->
-            <div class="row2">
-              <div class="field">
-                <label>اسم الكاتب (Author Name)</label>
-                <input type="text" id="wh-author-name" placeholder="مثال: إدارة السيرفر" oninput="updateWebhookEmbedPreview(); debouncedAutoSave(true)"/>
-              </div>
-              <div class="field">
-                <label>صورة الكاتب (Author Icon URL)</label>
-                <input type="text" id="wh-author-icon" placeholder="https://..." oninput="updateWebhookEmbedPreview(); debouncedAutoSave(true)"/>
-              </div>
-            </div>
-
-            <!-- Title & URL -->
-            <div class="row2">
-              <div class="field">
-                <label>عنوان الـ Embed (Title)</label>
-                <input type="text" id="wh-title" placeholder="عنوان رئيسي جذاب..." oninput="updateWebhookEmbedPreview(); debouncedAutoSave(true)"/>
-              </div>
-              <div class="field">
-                <label>رابط العنوان (Title URL)</label>
-                <input type="text" id="wh-title-url" placeholder="https://..." oninput="updateWebhookEmbedPreview(); debouncedAutoSave(true)"/>
-              </div>
-            </div>
-
-            <!-- Description -->
-            <div class="field">
-              <label>الوصف الرئيسي (Description - يدعم Markdown ديسكورد)</label>
-              <textarea id="wh-desc" rows="4" placeholder="اكتب محتوى الـ Embed هنا... يمكنك استخدام **عريض** و *مائل* وروابط [هنا](https://example.com)" oninput="updateWebhookEmbedPreview(); debouncedAutoSave(true)" style="background:var(--surface3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:13px;padding:8px 11px;width:100%;outline:none;resize:vertical"></textarea>
-            </div>
-
-            <!-- Color Picker -->
-            <div class="field">
-              <label>لون شريط الـ Embed الجانبي (Embed Color)</label>
-              <div class="color-picker-row">
-                <input type="color" id="wh-color-picker" value="#5865f2" onchange="syncWebhookColor(this.value)" style="width:36px;height:32px;border:none;background:none;cursor:pointer;padding:0;"/>
-                <input type="text" id="wh-color-hex" value="#5865f2" placeholder="#5865f2" maxlength="7" oninput="syncWebhookColorHex(this.value)" style="width:90px;font-family:monospace;"/>
-                <div class="color-swatch" style="background:#5865f2" onclick="setWebhookColor('#5865f2')" title="Blurple"></div>
-                <div class="color-swatch" style="background:#57f287" onclick="setWebhookColor('#57f287')" title="Green"></div>
-                <div class="color-swatch" style="background:#fee75c" onclick="setWebhookColor('#fee75c')" title="Yellow"></div>
-                <div class="color-swatch" style="background:#eb459e" onclick="setWebhookColor('#eb459e')" title="Fuchsia"></div>
-                <div class="color-swatch" style="background:#ed4245" onclick="setWebhookColor('#ed4245')" title="Red"></div>
-                <div class="color-swatch" style="background:#00a8fc" onclick="setWebhookColor('#00a8fc')" title="Cyan"></div>
-                <div class="color-swatch" style="background:#111214" onclick="setWebhookColor('#111214')" title="Dark"></div>
-              </div>
-            </div>
-
-            <!-- Images -->
-            <div class="row2">
-              <div class="field">
-                <label>صورة البانر الكبيرة (Banner URL)</label>
-                <input type="text" id="wh-image-url" placeholder="https://..." oninput="updateWebhookEmbedPreview(); debouncedAutoSave(true)"/>
-              </div>
-              <div class="field">
-                <label>الصورة المصغرة (Thumbnail URL)</label>
-                <input type="text" id="wh-thumb-url" placeholder="https://..." oninput="updateWebhookEmbedPreview(); debouncedAutoSave(true)"/>
-              </div>
-            </div>
-
-            <!-- Dynamic Fields -->
-            <div style="margin-top:10px;">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-                <label style="font-size:12px;font-weight:700;color:var(--text);">حقول إضافية (Embed Fields):</label>
-                <button type="button" class="btn-sm btn-3d-purple" onclick="addWebhookField()">+ إضافة حقل</button>
-              </div>
-              <div id="wh-fields-list" style="display:flex;flex-direction:column;gap:6px;"></div>
-            </div>
-
-            <!-- Footer & Timestamp -->
-            <div class="row2" style="margin-top:10px;">
-              <div class="field">
-                <label>نص الفوتر (Footer Text)</label>
-                <input type="text" id="wh-footer-text" placeholder="مثال: سنتري كي اس اي • جميع الحقوق محفوظة" oninput="updateWebhookEmbedPreview(); debouncedAutoSave(true)"/>
-              </div>
-              <div class="field">
-                <label>أيقونة الفوتر (Footer Icon URL)</label>
-                <input type="text" id="wh-footer-icon" placeholder="https://..." oninput="updateWebhookEmbedPreview(); debouncedAutoSave(true)"/>
-              </div>
-            </div>
-            <div style="margin-top:6px;">
-              <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text);cursor:pointer;">
-                <input type="checkbox" id="wh-include-timestamp" checked onchange="updateWebhookEmbedPreview(); debouncedAutoSave(true)"/>
-                تضمين التوقيت الحالي للرسالة (Include Timestamp)
-              </label>
-            </div>
-          </div>
-
-          <div id="wh-status-msg" style="display:none;padding:10px 14px;border-radius:8px;font-size:12px;font-weight:600;"></div>
-        </div>
-
-        <!-- RIGHT: LIVE DISCORD PREVIEW -->
-        <div>
-          <div style="position:sticky;top:10px;">
-            <div style="font-size:12px;font-weight:800;color:var(--accent2);margin-bottom:8px;display:flex;align-items:center;gap:6px;">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-              معاينة حية لشكل الرسالة في ديسكورد:
-            </div>
-
-            <div class="wh-embed-preview" id="wh-embed-preview">
-              <div class="wh-prev-msg-header">
-                <img class="wh-prev-avatar" id="wh-prev-avatar" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Bot"/>
-                <div>
-                  <div class="wh-prev-user">
-                    <span id="wh-prev-username">Naml Webhook</span>
-                    <span class="wh-bot-tag">BOT</span>
-                  </div>
-                  <div class="wh-prev-time" id="wh-prev-time">اليوم الساعة 4:20 م</div>
-                </div>
-              </div>
-
-              <!-- Message Content text -->
-              <div class="wh-prev-text" id="wh-prev-content" style="display:none;"></div>
-
-              <!-- Rich Embed Card -->
-              <div class="wh-embed-card" id="wh-embed-card">
-                <!-- Author -->
-                <div class="wh-embed-author" id="wh-prev-author-wrap" style="display:none;">
-                  <img class="wh-embed-author-img" id="wh-prev-author-img" src="" alt="" style="display:none;"/>
-                  <span id="wh-prev-author-name"></span>
-                </div>
-
-                <!-- Thumbnail (floats right/left) -->
-                <img class="wh-embed-thumb" id="wh-prev-thumb" src="" alt="" style="display:none;"/>
-
-                <!-- Title -->
-                <a class="wh-embed-title" id="wh-prev-title" href="#" target="_blank" style="display:none;"></a>
-
-                <!-- Description -->
-                <div class="wh-embed-desc" id="wh-prev-desc" style="display:none;"></div>
-
-                <!-- Fields -->
-                <div class="wh-embed-fields" id="wh-prev-fields" style="display:none;"></div>
-
-                <!-- Image -->
-                <img class="wh-embed-img" id="wh-prev-image" src="" alt="" style="display:none;"/>
-
-                <!-- Footer -->
-                <div class="wh-embed-footer" id="wh-prev-footer-wrap" style="display:none;">
-                  <img class="wh-embed-footer-img" id="wh-prev-footer-icon" src="" alt="" style="display:none;"/>
-                  <span id="wh-prev-footer-text"></span>
-                  <span id="wh-prev-footer-time" style="margin-right:4px;"></span>
-                </div>
-              </div>
-            </div>
-
-            <div style="margin-top:10px;text-align:center;">
-              <button class="btn-3d btn-3d-purple" style="width:100%;" onclick="sendDiscordWebhook()">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
-                إرسال الرسالة إلى ديسكورد
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div style="height:24px;"></div>
-    </div>
   </div>
 
   <!-- ── TAB: PREVIEW ── -->
@@ -1657,35 +916,6 @@
         </div>
       </div>
 
-      <!-- Simulation Control Bar -->
-      <div class="sim-bar" id="sim-bar">
-        <div class="sim-bar-top">
-          <div class="sim-info">
-            <div class="sim-status-dot" id="sim-dot"></div>
-            <div>
-              <div class="sim-title">محاكاة المشهد المتحرك (Live Simulation)</div>
-              <div class="sim-sub" id="sim-counter-text">المحاكاة متوقفة — اضغط تشغيل للمعاينة الحية</div>
-            </div>
-          </div>
-          <div class="sim-controls">
-            <button type="button" class="sim-btn" id="btn-sim-prev" onclick="simStepFrame(-1)" title="الفريم السابق">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
-            </button>
-            <button type="button" class="sim-btn sim-btn-play" id="btn-sim-toggle" onclick="toggleRotatorSimulation()" title="تشغيل / إيقاف المعاينة المتحركة">
-              <span id="sim-play-icon">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              </span>
-            </button>
-            <button type="button" class="sim-btn" id="btn-sim-next" onclick="simStepFrame(1)" title="الفريم التالي">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
-            </button>
-          </div>
-        </div>
-        <div class="sim-progress-track">
-          <div class="sim-progress-fill" id="sim-progress-fill"></div>
-        </div>
-      </div>
-
       <!-- Discord-style profile card -->
       <div class="discord-card">
         <div class="dc-banner"></div>
@@ -1705,7 +935,7 @@
             <div class="dc-username" id="pv-username">@yourusername</div>
           </div>
           <div class="dc-divider"></div>
-          <div class="dc-section-label" id="pv-section-label">جاري التشغيل</div>
+          <div class="dc-section-label">جاري التشغيل</div>
           <div class="dc-activity" id="pv-activity">
             <img class="dc-act-img-large" id="pv-large-img" src="" alt=""/>
             <img class="dc-act-img-small" id="pv-small-img" src="" alt=""/>
@@ -1878,16 +1108,24 @@
       </div>
     </div>
     <div style="display:flex;flex-direction:column;gap:14px;padding:0 2px 20px">
-      <!-- ── TAB: ABOUT ── -->
-      <div class="card" style="text-align:center;padding:26px 20px;background:linear-gradient(135deg,rgba(15,20,32,0.9),rgba(22,28,46,0.95));border:1px solid rgba(99,102,241,0.25);">
-        <img src="assets/naml-logo.png" style="width:84px;height:84px;object-fit:contain;margin-bottom:10px;" alt="نامل"/>
-        <div style="font-size:26px;font-weight:900;background:linear-gradient(135deg,#06b6d4,#10b981);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px;">نامل — Naml</div>
-        <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(34,197,94,0.15);color:#22c55e;padding:3px 12px;border-radius:12px;font-size:11px;font-weight:800;margin-bottom:8px;">
-          الإصدار 3.0.0 المستقر ⚡
+      <div class="card" style="text-align:center;padding:28px 20px;">
+        <img src="assets/naml-logo.png" style="width:90px;height:90px;object-fit:contain;margin-bottom:12px;" alt="نامل"/>
+        <div style="font-size:28px;font-weight:900;background:linear-gradient(135deg,#06b6d4,#10b981);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px;">نامل</div>
+        <div style="font-size:12px;color:var(--muted);margin-bottom:4px;">الإصدار 2.0.0</div>
+        <div style="font-size:12px;color:var(--muted);">منصة متكاملة للتحكم في Discord Rich Presence وإدارة بوتات ديسكورد</div>
+      </div>
+      <div class="card">
+        <div class="card-title">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          معلومات التطبيق
         </div>
-        <div style="font-size:12px;color:var(--muted);max-width:440px;margin:0 auto;line-height:1.6;">
-          منصة متكاملة واحترافية للتحكم في Discord Rich Presence والمشاهد المتحركة وإدارة بوتات ديسكورد بأعلى كفاءة وأقل استهلاك للموارد.
-        </div>
+        <table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:8px;">
+          <tr><td style="color:var(--muted);padding:5px 0;width:100px;">الاسم:</td><td style="font-weight:600;">نامل (Naml)</td></tr>
+          <tr><td style="color:var(--muted);padding:5px 0;">الإصدار:</td><td style="font-weight:600;">2.0.0</td></tr>
+          <tr><td style="color:var(--muted);padding:5px 0;">الترخيص:</td><td style="font-weight:600;">مغلق المصدر — جميع الحقوق محفوظة</td></tr>
+          <tr><td style="color:var(--muted);padding:5px 0;">التقنيات:</td><td style="font-weight:600;">Electron.js · Node.js · Discord API</td></tr>
+          <tr><td style="color:var(--muted);padding:5px 0;">الأمان:</td><td style="font-weight:600;">تشفير محلي 100% — بلا خوادم خارجية</td></tr>
+        </table>
       </div>
 
       <!-- Updates & Changelog Card -->
@@ -1897,80 +1135,92 @@
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
             <span>التحديثات وما الجديد (Changelog)</span>
           </div>
-          <span style="background:rgba(34,197,94,0.15);color:var(--green);padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;">v3.0.0</span>
+          <span style="background:rgba(34,197,94,0.15);color:var(--green);padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;">v2.0.0</span>
         </div>
 
-        <div style="display:flex;align-items:center;justify-content:space-between;margin:10px 0 14px;background:var(--surface3);padding:10px 14px;border-radius:8px;border:1px solid var(--border);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin:10px 0 14px;background:var(--surface2);padding:10px 14px;border-radius:8px;border:1px solid var(--border);">
           <div>
-            <div style="font-weight:700;font-size:12px;" id="update-status-title">أنت تستخدم أحدث إصدار مستقر (v3.0.0)</div>
-            <div style="font-size:11px;color:var(--muted);" id="update-status-sub">محرك سبوتيفاي الذكي، استيراد كلمات الـ AI، وخفض استهلاك الرام 70%</div>
+            <div style="font-weight:700;font-size:12px;" id="update-status-title">أنت تستخدم أحدث إصدار مستقر</div>
+            <div style="font-size:11px;color:var(--muted);" id="update-status-sub">تم تأمين النسخة واسترجاع بياناتك بنجاح</div>
           </div>
-          <button type="button" id="btn-check-updates" onclick="handleCheckUpdates()" class="btn-3d btn-3d-blue" style="font-size:11px;padding:6px 12px;">
+          <button id="btn-check-updates" onclick="handleCheckUpdates()" style="display:flex;align-items:center;gap:5px;padding:6px 12px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-weight:600;cursor:pointer;">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
             <span>فحص التحديثات</span>
           </button>
         </div>
 
-        <div style="font-weight:700;font-size:12px;margin-bottom:8px;color:var(--text);">ما تم إضافته في هذا التحديث (v3.0.0):</div>
+        <div style="font-weight:700;font-size:12px;margin-bottom:8px;color:var(--text);">ما تم إضافته في هذا التحديث (v2.0.0):</div>
         <div class="changelog-list" style="display:flex;flex-direction:column;gap:8px;" id="changelog-container">
-          <div style="background:var(--surface3);border:1px solid var(--border);border-right:3px solid #10b981;border-radius:6px;padding:8px 12px;">
-            <div style="font-weight:700;font-size:12px;color:#10b981;margin-bottom:2px;">🎵 محرك سبوتيفاي وسحب الكلمات المتزامنة تلقائياً</div>
-            <div style="font-size:11px;color:var(--muted);">ضع رابط أي أغنية من Spotify لجلب الغلاف والكلمات المتزامنة وترتيبها في فريمات الـ RPC بضغطة زر.</div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-right:3px solid var(--green);border-radius:6px;padding:8px 12px;">
+            <div style="font-weight:700;font-size:12px;color:var(--green);margin-bottom:2px;">🛡️ استرجاع واستقرار بيانات الحفظ والبروفايلات</div>
+            <div style="font-size:11px;color:var(--muted);">نظام تخزين ذكي موحد يبحث في كافة مسارات البيانات ويحمي إعداداتك وبروفايلاتك من الضياع.</div>
           </div>
-          <div style="background:var(--surface3);border:1px solid var(--border);border-right:3px solid var(--accent);border-radius:6px;padding:8px 12px;">
-            <div style="font-weight:700;font-size:12px;color:var(--accent);margin-bottom:2px;">🤖 صانع الفريمات واستيراد كلمات الـ AI وملفات LRC</div>
-            <div style="font-size:11px;color:var(--muted);">زر نسخ برومبت جاهز لـ ChatGPT و Gemini لتجهيز الكلمات مقسمة بالأوقات، مع إمكانية تعيين صورة موحدة لجميع الفريمات بنقرة واحدة.</div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-right:3px solid var(--accent);border-radius:6px;padding:8px 12px;">
+            <div style="font-weight:700;font-size:12px;color:var(--accent);margin-bottom:2px;">🚀 تشغيل مباشر بالأيقونة واختصار سطح المكتب</div>
+            <div style="font-size:11px;color:var(--muted);">إنشاء اختصار مباشر على سطح المكتب والمجلد لفتح البرنامج بنقرة زر وبشعار نامل الرسمي.</div>
           </div>
-          <div style="background:var(--surface3);border:1px solid var(--border);border-right:3px solid var(--green);border-radius:6px;padding:8px 12px;">
-            <div style="font-weight:700;font-size:12px;color:var(--green);margin-bottom:2px;">⚡ تقليص استهلاك الرام بنسبة تتجاوز 70%</div>
-            <div style="font-size:11px;color:var(--muted);">محرك ذكي لتفريغ الذاكرة وتنظيف الرام تلقائياً عند التصغير لشريط المهام (Tray).</div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-right:3px solid var(--purple);border-radius:6px;padding:8px 12px;">
+            <div style="font-weight:700;font-size:12px;color:var(--purple);margin-bottom:2px;">🔒 تعزيز الأمان والحماية البرمجية للتوزيع</div>
+            <div style="font-size:11px;color:var(--muted);">عزل تام للنوافذ الخارجية، تأمين بروتوكول فتح الروابط، وتشفير التوكنات عبر تقنية DPAPI.</div>
           </div>
-          <div style="background:var(--surface3);border:1px solid var(--border);border-right:3px solid var(--purple);border-radius:6px;padding:8px 12px;">
-            <div style="font-weight:700;font-size:12px;color:var(--purple);margin-bottom:2px;">🗔 الإغلاق السلس إلى شريط المهام (Minimize to Tray)</div>
-            <div style="font-size:11px;color:var(--muted);">زر الإغلاق (X) يقوم بالتصغير السريع للأيقونة بجانب الساعة دون مقاطعة الـ RPC النشط.</div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-right:3px solid var(--yellow);border-radius:6px;padding:8px 12px;">
+            <div style="font-weight:700;font-size:12px;color:var(--yellow);margin-bottom:2px;">✨ مركز فحص التحديثات وسجل التغييرات</div>
+            <div style="font-size:11px;color:var(--muted);">واجهة فورية لمعرفة ما الجديد في كل إصدار وإمكانية التحقق الآمن من وجود إصدارات أحدث.</div>
           </div>
         </div>
       </div>
-
-      <!-- Developer & Community Card -->
       <div class="card">
         <div class="card-title">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-          المبرمج والترخيص والمجتمع
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+          الدعم الفني والمجتمع
         </div>
+        <p style="font-size:12px;color:var(--muted);margin:8px 0 12px;">للحصول على المساعدة أو التبليغ عن مشاكل:</p>
+        <button class="btn-accent" onclick="window.rpc.openExternal('https://discord.gg/PCu6fdXRGg')" style="width:100%;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-left:6px;"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+          سيرفر الدعم الرسمي
+        </button>
+      </div>
+      <div style="text-align:center;font-size:11px;color:var(--muted);padding:4px;">
+        جميع الحقوق محفوظة لـ QZV سنتري كي اس اي.
+      </div>
+    </div>
+  </div>
+</div>
+        <p style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:12px" data-i18n="about_server_desc">
+          انضم إلى سيرفر الديسكورد الرسمي للحصول على التحديثات، الدعم الفني، والمشاركة في تطوير المشروع:
+        </p>
+        <div class="discord-join-box">
+          <div class="discord-link-text">https://discord.gg/PCu6fdXRGg</div>
+          <button class="btn-3d btn-3d-purple" style="width:100%" onclick="window.rpc.openExternal('https://discord.gg/PCu6fdXRGg')">
+            <span data-i18n="btn_join_discord"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"></path><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"></path><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"></path><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"></path></svg> الانضمام لسيرفر ديسكورد</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Developer & Credits -->
+      <div class="card">
+        <div class="card-title" data-i18n="about_dev_title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg> المبرمج والمشروع</div>
         <div class="about-info-grid">
           <div class="info-item">
-            <span class="info-lbl">المطور:</span>
+            <span class="info-lbl" data-i18n="lbl_developer">المطور:</span>
             <span class="info-val">QZV سنتري كي اس اي</span>
           </div>
           <div class="info-item">
-            <span class="info-lbl">الترخيص:</span>
+            <span class="info-lbl" data-i18n="lbl_license">الترخيص:</span>
             <span class="info-val">جميع الحقوق محفوظة لـ QZV سنتري كي اس اي</span>
           </div>
           <div class="info-item">
-            <span class="info-lbl">التقنيات:</span>
+            <span class="info-lbl" data-i18n="lbl_framework">التقنيات:</span>
             <span class="info-val">Electron, Node.js, WebSockets</span>
           </div>
           <div class="info-item">
-            <span class="info-lbl">الأمان:</span>
-            <span class="info-val">تشفير محلي 100% بدون خوادم خارجية</span>
-          </div>
-        </div>
-
-        <div style="margin-top:14px;background:var(--surface3);border:1px solid var(--border);border-radius:8px;padding:12px;">
-          <div style="font-size:12px;font-weight:700;margin-bottom:4px;color:var(--text);">💬 سيرفر الدعم الرسمي والمجتمع:</div>
-          <div style="font-size:11px;color:var(--muted);margin-bottom:8px;">انضم إلى سيرفر الديسكورد الرسمي للحصول على التحديثات، الدعم الفني، والمشاركة في تطوير المشروع:</div>
-          <div style="display:flex;gap:8px;align-items:center;">
-            <input type="text" readonly value="https://discord.gg/PCu6fdXRGg" style="flex:1;font-family:monospace;font-size:11px;background:var(--surface2);color:var(--accent2);direction:ltr;text-align:left;border:1px solid var(--border);border-radius:6px;padding:6px 10px;"/>
-            <button type="button" class="btn-3d btn-3d-purple" style="padding:6px 14px;font-size:11px;white-space:nowrap;" onclick="window.rpc.openExternal('https://discord.gg/PCu6fdXRGg')">
-              الانضمام لسيرفر ديسكورد 🚀
-            </button>
+            <span class="info-lbl" data-i18n="lbl_security">الأمان:</span>
+            <span class="info-val" data-i18n="val_security">تشفير محلي 100% بدون خوادم خارجية</span>
           </div>
         </div>
       </div>
     </div>
   </div>
-</div>
 
 </div><!-- #content -->
 
@@ -2151,142 +1401,10 @@
         </div>
       </div>
     </div>
-    <!-- Frame Duration -->
-    <div class="row2" style="margin-top:10px;">
-      <div class="field">
-        <label>⏱ مدة بقاء هذا الفريم (بالثواني)</label>
-        <input type="number" id="frame-duration-input" placeholder="مثال: 5" min="2" max="3600" value="5"/>
-      </div>
-      <div class="field" style="display:flex;align-items:flex-end;">
-        <span style="font-size:11px;color:var(--muted);padding-bottom:10px;">توقيت مستقل ومخصص لهذا الفريم فقط (ثانيتين كحد أدنى)</span>
-      </div>
-    </div>
 
     <div class="modal-actions" style="margin-top:14px">
       <button class="btn-accent" onclick="saveFrameFromModal()">حفظ الفريم</button>
       <button class="btn-ghost" onclick="closeModal('modal-frame')">إلغاء</button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal: AI & LRC Lyrics Importer -->
-<div class="modal-overlay" id="modal-lyrics-importer">
-  <div class="modal" style="max-width:580px; max-height:90vh; overflow-y:auto;">
-    <div class="modal-title" style="display:flex;align-items:center;justify-content:space-between;">
-      <div style="display:flex;align-items:center;gap:8px;">
-        <span style="font-size:18px;">🤖</span>
-        <span>استيراد كلمات الأغاني وتوليد الفريمات (AI & LRC)</span>
-      </div>
-      <span class="badge" style="background:rgba(34,197,94,0.15);color:#22c55e;">تلقائي بالكامل</span>
-    </div>
-
-    <!-- AI Guide & Quick Prompt Copy -->
-    <div style="background:linear-gradient(135deg, rgba(99,102,241,0.12), rgba(168,85,247,0.08)); border:1px solid rgba(99,102,241,0.3); border-radius:8px; padding:12px; margin-bottom:14px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-        <span style="font-size:12px;font-weight:700;color:var(--accent2);display:flex;align-items:center;gap:5px;">
-          💡 استعن بأي ذكاء اصطناعي (ChatGPT / Gemini / Claude)
-        </span>
-        <button type="button" class="btn-sm btn-3d-purple" onclick="copyAiLyricsPrompt()" style="font-size:11px;padding:3px 10px;">
-          📋 نسخ أمر الـ AI (Prompt)
-        </button>
-      </div>
-      <p style="font-size:11px;color:var(--muted);line-height:1.6;margin:0;">
-        انسخ الأمر وافتحه في أي ذكاء اصطناعي واكتب له اسم الأغنية فقط، وسيعطيك الكلمات موزعة بالأوقات جاهزة للصق هنا بنقرة واحدة! أو ارفع ملف <code style="color:#22c55e">.lrc</code> مباشر.
-      </p>
-    </div>
-
-    <!-- Input Source: Upload or Paste -->
-    <div class="field">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-        <label style="margin:0;">ملف الكلمات أو النص المباشر:</label>
-        <div style="display:flex;gap:6px;">
-          <input type="file" id="lyrics-file-input" accept=".lrc,.txt,.json" style="display:none;" onchange="handleLyricsFileInput(event)"/>
-          <button type="button" class="btn-sm" onclick="document.getElementById('lyrics-file-input').click()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);font-size:11px;padding:3px 8px;border-radius:6px;cursor:pointer;">
-            📁 رفع ملف (.lrc / .txt / .json)
-          </button>
-        </div>
-      </div>
-      <textarea id="lyrics-raw-input" rows="6" placeholder="الصق الكلمات هنا...
-أمثلة مقبولة:
-1) بتنسيق LRC:
-[00:15.20] أول سطر من الأغنية
-[00:21.50] السطر الثاني
-2) سطر مع مدة بالثواني:
-السطر الأول | 4
-السطر الثاني | 5
-3) سطور عادية وسنتكفل بالتوقيت تلقائياً!" oninput="previewParsedLyrics()" style="background:var(--surface3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:12px;padding:8px 10px;width:100%;box-sizing:border-box;resize:vertical;"></textarea>
-    </div>
-
-    <!-- Bulk Frame Options -->
-    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-top:10px;">
-      <div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px;">🎨 تخصيص مظهر جميع الفريمات الناتجة دفعة واحدة:</div>
-
-      <div class="row2">
-        <!-- Details Prefix -->
-        <div class="field">
-          <label>سطر التفاصيل الثابت (Details - اختياري):</label>
-          <input type="text" id="lyrics-details-input" placeholder="مثال: 🎵 تستمع إلى الأغنية" oninput="previewParsedLyrics()"/>
-        </div>
-        <!-- Default Duration -->
-        <div class="field">
-          <label>المدة الافتراضية لكل فريم (بالثواني):</label>
-          <input type="number" id="lyrics-default-dur" value="4" min="2" max="60" oninput="previewParsedLyrics()"/>
-        </div>
-      </div>
-
-      <!-- Bulk Images -->
-      <div class="row2" style="margin-top:8px;">
-        <!-- Large Image -->
-        <div class="field">
-          <label>الصورة الكبيرة لجميع الفريمات:</label>
-          <div style="display:flex;gap:6px;align-items:center;">
-            <img id="lyrics-bulk-large-thumb" src="" style="width:32px;height:32px;border-radius:6px;object-fit:cover;background:var(--surface3);display:none;border:1px solid var(--border);" alt=""/>
-            <input type="text" id="lyrics-bulk-large-img" placeholder="رابط أو مفتاح الصورة..." oninput="updateLyricsBulkThumb('large'); previewParsedLyrics()" style="flex:1;"/>
-            <button type="button" class="btn-upload" onclick="triggerLyricsBulkUpload('large')" title="رفع صورة من جهازك">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            </button>
-            <input type="file" id="lyrics-file-large" accept="image/*" style="display:none" onchange="handleLyricsBulkFileSelect(event, 'large')"/>
-          </div>
-        </div>
-
-        <!-- Small Image -->
-        <div class="field">
-          <label>الصورة الصغيرة لجميع الفريمات:</label>
-          <div style="display:flex;gap:6px;align-items:center;">
-            <img id="lyrics-bulk-small-thumb" src="" style="width:32px;height:32px;border-radius:6px;object-fit:cover;background:var(--surface3);display:none;border:1px solid var(--border);" alt=""/>
-            <input type="text" id="lyrics-bulk-small-img" placeholder="رابط أو مفتاح الصورة..." oninput="updateLyricsBulkThumb('small'); previewParsedLyrics()" style="flex:1;"/>
-            <button type="button" class="btn-upload" onclick="triggerLyricsBulkUpload('small')" title="رفع صورة من جهازك">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            </button>
-            <input type="file" id="lyrics-file-small" accept="image/*" style="display:none" onchange="handleLyricsBulkFileSelect(event, 'small')"/>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Live Preview Count & List -->
-    <div style="margin-top:12px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-        <span style="font-size:12px;font-weight:700;color:var(--text);">
-          📋 المعاينة المباشرة (<span id="lyrics-preview-count" style="color:#22c55e;">0</span> فريم مكتشف):
-        </span>
-      </div>
-      <div id="lyrics-preview-list" style="max-height:160px;overflow-y:auto;background:var(--surface1);border:1px solid var(--border);border-radius:6px;padding:6px;display:flex;flex-direction:column;gap:4px;">
-        <div style="font-size:11px;color:var(--muted);text-align:center;padding:12px;">قم بلصق الكلمات أو رفع ملف لمعاينة الفريمات قبل التوليد</div>
-      </div>
-    </div>
-
-    <!-- Actions -->
-    <div class="modal-actions" style="margin-top:16px;display:flex;justify-content:space-between;align-items:center;gap:8px;">
-      <button class="btn-ghost" onclick="closeModal('modal-lyrics-importer')">إلغاء</button>
-      <div style="display:flex;gap:8px;">
-        <button class="btn-3d btn-3d-purple" onclick="executeLyricsImport(false)" title="إضافة الفريمات مع الإبقاء على الفريمات الحالية">
-          ➕ إضافة للفريمات
-        </button>
-        <button class="btn-3d btn-3d-green" onclick="executeLyricsImport(true)" title="حذف الفريمات الحالية واستبدالها بهذه الأغنية بالكامل">
-          ⚡ استبدال الكل وتطبيق
-        </button>
-      </div>
     </div>
   </div>
 </div>

@@ -342,113 +342,6 @@ function getSystemMetricsText(format = 'full') {
   return `الرام: ${usedGB}GB / ${totalGB}GB (${ramPercent}%) | المعالج: ${cpuLoad}%`;
 }
 
-let rotatorTimer = null;
-let rotatorPingPongDir = 1;
-
-function clearRotatorTimer() {
-  if (rotatorTimer) {
-    clearTimeout(rotatorTimer);
-    rotatorTimer = null;
-  }
-}
-
-function detectCurrentMedia() {
-  return new Promise((resolve) => {
-    if (process.platform !== 'win32') return resolve({ active: false });
-    const script = `
-      $sp = Get-Process spotify -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -and $_.MainWindowTitle -ne 'Spotify' -and $_.MainWindowTitle -ne 'Spotify Free' -and $_.MainWindowTitle -ne 'Spotify Premium' -and $_.MainWindowTitle -match ' - ' } | Select-Object -First 1
-      if ($sp) {
-        $parts = $sp.MainWindowTitle -split ' - ', 2
-        Write-Output "SPOTIFY:::$($parts[0].Trim()):::$($parts[1].Trim())"
-        exit 0
-      }
-      $br = Get-Process chrome, msedge, brave, firefox, opera, vlc -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowTitle -and ($_.MainWindowTitle -match ' - YouTube' -or $_.MainWindowTitle -match 'YouTube Music' -or $_.MainWindowTitle -match 'SoundCloud' -or $_.ProcessName -eq 'vlc') } | Select-Object -First 1
-      if ($br) {
-        $raw = $br.MainWindowTitle -replace ' - YouTube.*$', '' -replace ' - Google Chrome$', '' -replace ' - Microsoft Edge$', '' -replace ' - Brave$', ''
-        if ($raw -match ' - ') {
-          $bParts = $raw -split ' - ', 2
-          Write-Output "MEDIA:::$($bParts[0].Trim()):::$($bParts[1].Trim())"
-        } else {
-          Write-Output "MEDIA:::YouTube:::$($raw.Trim())"
-        }
-        exit 0
-      }
-      Write-Output "NONE"
-    `;
-    exec(`powershell -NoProfile -Command "${script.replace(/\r?\n/g, ' ')}"`, { timeout: 2500 }, (err, stdout) => {
-      if (err || !stdout) return resolve({ active: false });
-      const str = stdout.trim();
-      if (str.startsWith('SPOTIFY:::')) {
-        const parts = str.split(':::');
-        return resolve({ active: true, player: 'Spotify', artist: parts[1], title: parts[2] });
-      }
-      if (str.startsWith('MEDIA:::')) {
-        const parts = str.split(':::');
-        return resolve({ active: true, player: 'Media', artist: parts[1], title: parts[2] });
-      }
-      resolve({ active: false });
-    });
-  });
-}
-
-function sendDiscordActivity(client, activity, pid = process.pid) {
-  if (!client) return Promise.resolve();
-  const args = activity;
-  let timestamps;
-  let assets;
-  let party;
-  let secrets;
-  if (args.startTimestamp || args.endTimestamp) {
-    timestamps = {
-      start: args.startTimestamp,
-      end: args.endTimestamp,
-    };
-    if (timestamps.start instanceof Date) timestamps.start = Math.round(timestamps.start.getTime());
-    if (timestamps.end instanceof Date) timestamps.end = Math.round(timestamps.end.getTime());
-  }
-  if (args.largeImageKey || args.largeImageText || args.smallImageKey || args.smallImageText) {
-    assets = {
-      large_image: args.largeImageKey,
-      large_text: args.largeImageText,
-      small_image: args.smallImageKey,
-      small_text: args.smallImageText,
-    };
-  }
-  if (args.partySize || args.partyId || args.partyMax) {
-    party = { id: args.partyId };
-    if (args.partySize || args.partyMax) {
-      party.size = [args.partySize, args.partyMax];
-    }
-  }
-  if (args.matchSecret || args.joinSecret || args.spectateSecret) {
-    secrets = {
-      match: args.matchSecret,
-      join: args.joinSecret,
-      spectate: args.spectateSecret,
-    };
-  }
-
-  const payload = {
-    state: args.state,
-    details: args.details,
-    timestamps,
-    assets,
-    party,
-    secrets,
-    buttons: args.buttons,
-    instance: !!args.instance,
-    type: args.type !== undefined ? parseInt(args.type) : 0
-  };
-  if (payload.type === 1 && args.url) {
-    payload.url = args.url;
-  }
-
-  return client.request('SET_ACTIVITY', {
-    pid,
-    activity: payload
-  });
-}
-
 async function startRpc(config) {
   if (activeRpcClient) {
     try {
@@ -463,7 +356,6 @@ async function startRpc(config) {
     clearInterval(rpcInterval);
     rpcInterval = null;
   }
-  clearRotatorTimer();
 
   // Check if Discord process is running first
   const isUp = await checkDiscordRunning();
@@ -499,7 +391,6 @@ async function startRpc(config) {
             clearInterval(rpcInterval);
             rpcInterval = null;
           }
-          clearRotatorTimer();
         }
         if (mainWindow && mainWindow.webContents) {
           mainWindow.webContents.send('rpc-stopped');
@@ -509,110 +400,29 @@ async function startRpc(config) {
       if (config.rotationEnabled && Array.isArray(config.rotationFrames) && config.rotationFrames.length > 0) {
         rotationFrames = config.rotationFrames;
         currentFrameIndex = 0;
-        rotatorPingPongDir = 1;
+        const intervalMs = Math.max(3000, (parseInt(config.rotationInterval) || 5) * 1000);
 
-        const scheduleNextFrame = async () => {
+        const applyNextFrame = () => {
           if (!activeRpcClient) return;
-
-          // Check if live media mode is enabled and music is currently playing
-          if (config.liveMediaEnabled) {
-            try {
-              const media = await detectCurrentMedia();
-              if (media && media.active && media.title) {
-                const mediaConfig = {
-                  ...config,
-                  activityType: 2, // Listening to
-                  details: String(media.title).substring(0, 128),
-                  state: `by ${media.artist || 'Unknown'}`.substring(0, 128),
-                  largeImageKey: media.player === 'Spotify' 
-                    ? 'https://cdn-icons-png.flaticon.com/512/174/174872.png'
-                    : 'https://cdn-icons-png.flaticon.com/512/1384/1384060.png',
-                  largeImageText: media.title,
-                  smallImageKey: 'https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png',
-                  smallImageText: `Playing on ${media.player}`
-                };
-                activeActivity = buildActivity(mediaConfig);
-                sendDiscordActivity(activeRpcClient, activeActivity).catch(() => {});
-                rotatorTimer = setTimeout(scheduleNextFrame, 5000);
-                return;
-              }
-            } catch (err) {}
-          }
-
           const currentFrame = rotationFrames[currentFrameIndex];
-          if (!currentFrame) return;
-
           const mergedConfig = { ...config, ...currentFrame };
           activeActivity = buildActivity(mergedConfig);
-          sendDiscordActivity(activeRpcClient, activeActivity).catch(() => {});
-
-          const frameDurationSec = Math.max(2, parseInt(currentFrame.duration) || parseInt(config.rotationInterval) || 5);
-
-          const mode = config.rotationMode || 'sequential';
-          let nextIndex = 0;
-          if (mode === 'random') {
-            if (rotationFrames.length > 1) {
-              let r;
-              do {
-                r = Math.floor(Math.random() * rotationFrames.length);
-              } while (r === currentFrameIndex);
-              nextIndex = r;
-            } else {
-              nextIndex = 0;
-            }
-          } else if (mode === 'pingpong') {
-            if (rotationFrames.length <= 1) {
-              nextIndex = 0;
-            } else {
-              nextIndex = currentFrameIndex + rotatorPingPongDir;
-              if (nextIndex >= rotationFrames.length) {
-                rotatorPingPongDir = -1;
-                nextIndex = Math.max(0, rotationFrames.length - 2);
-              } else if (nextIndex < 0) {
-                rotatorPingPongDir = 1;
-                nextIndex = Math.min(rotationFrames.length - 1, 1);
-              }
-            }
-          } else {
-            nextIndex = (currentFrameIndex + 1) % rotationFrames.length;
-          }
-
-          currentFrameIndex = nextIndex;
-          rotatorTimer = setTimeout(scheduleNextFrame, frameDurationSec * 1000);
+          activeRpcClient.setActivity(activeActivity).catch(() => {});
+          currentFrameIndex = (currentFrameIndex + 1) % rotationFrames.length;
         };
 
-        scheduleNextFrame();
+        applyNextFrame();
+        rpcInterval = setInterval(applyNextFrame, intervalMs);
       } else {
-        const updateStaticPresence = async () => {
-          if (!activeRpcClient) return;
-          if (config.liveMediaEnabled) {
-            try {
-              const media = await detectCurrentMedia();
-              if (media && media.active && media.title) {
-                const mediaConfig = {
-                  ...config,
-                  activityType: 2,
-                  details: String(media.title).substring(0, 128),
-                  state: `by ${media.artist || 'Unknown'}`.substring(0, 128),
-                  largeImageKey: media.player === 'Spotify' 
-                    ? 'https://cdn-icons-png.flaticon.com/512/174/174872.png'
-                    : 'https://cdn-icons-png.flaticon.com/512/1384/1384060.png',
-                  largeImageText: media.title,
-                  smallImageKey: 'https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png',
-                  smallImageText: `Playing on ${media.player}`
-                };
-                activeActivity = buildActivity(mediaConfig);
-                sendDiscordActivity(activeRpcClient, activeActivity).catch(() => {});
-                return;
-              }
-            } catch (err) {}
-          }
-          activeActivity = buildActivity(config);
-          sendDiscordActivity(activeRpcClient, activeActivity).catch(() => {});
-        };
+        activeActivity = buildActivity(config);
+        client.setActivity(activeActivity).catch(() => {});
 
-        updateStaticPresence();
-        rpcInterval = setInterval(updateStaticPresence, config.liveMediaEnabled ? 5000 : 15000);
+        rpcInterval = setInterval(() => {
+          if (activeRpcClient && activeActivity) {
+            const freshActivity = config.enableSystemMetrics ? buildActivity(config) : activeActivity;
+            activeRpcClient.setActivity(freshActivity).catch(() => {});
+          }
+        }, 15000);
       }
 
       if (!resolved) {
@@ -685,13 +495,6 @@ function buildActivity(config) {
   if (config.matchSecret) activity.matchSecret = config.matchSecret;
   if (config.instance) activity.instance = true;
 
-  if (config.activityType !== undefined && config.activityType !== null) {
-    activity.type = parseInt(config.activityType) || 0;
-  }
-  if (activity.type === 1 && config.streamUrl) {
-    activity.url = config.streamUrl;
-  }
-
   const buttons = [];
   if (config.button1Label && config.button1Url) buttons.push({ label: config.button1Label, url: config.button1Url });
   if (config.button2Label && config.button2Url) buttons.push({ label: config.button2Label, url: config.button2Url });
@@ -701,7 +504,6 @@ function buildActivity(config) {
 }
 
 async function stopRpc() {
-  clearRotatorTimer();
   if (rpcInterval) {
     clearInterval(rpcInterval);
     rpcInterval = null;
@@ -757,9 +559,9 @@ ipcMain.handle('open-external', async (_e, url) => {
 
 ipcMain.handle('check-for-updates', async () => {
   return {
-    currentVersion: '3.0.0',
+    currentVersion: '2.0.0',
     isLatest: true,
-    latestVersion: '3.0.0',
+    latestVersion: '2.0.0',
     releaseDate: '2026-09-18',
     changelog: [
       {
@@ -1093,7 +895,7 @@ ipcMain.handle('export-backup', async () => {
   try {
     const backupData = {
       app: 'naml',
-      version: '3.0.0',
+      version: '2.0.0',
       exportedAt: new Date().toISOString(),
       rights: 'جميع الحقوق محفوظة لـ QZV سنتري كي اس اي',
       config: loadConfig(),
@@ -1114,212 +916,6 @@ ipcMain.handle('export-backup', async () => {
   } catch (e) {
     return { success: false, error: e.message };
   }
-});
-
-ipcMain.handle('get-current-media', async () => {
-  return await detectCurrentMedia();
-});
-
-ipcMain.handle('discord-send-webhook', async (_e, { webhookUrl, payload }) => {
-  if (!webhookUrl || typeof webhookUrl !== 'string' || !webhookUrl.startsWith('https://discord.com/api/webhooks/')) {
-    return { success: false, error: 'رابط الويب هوك غير صالح. يجب أن يبدأ بـ https://discord.com/api/webhooks/' };
-  }
-
-  return new Promise((resolve) => {
-    try {
-      const url = new URL(webhookUrl);
-      const dataStr = JSON.stringify(payload);
-      const req = https.request({
-        hostname: url.hostname,
-        path: url.pathname + url.search,
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Content-Length': Buffer.byteLength(dataStr)
-        }
-      }, (res) => {
-        let body = '';
-        res.on('data', chunk => body += chunk);
-        res.on('end', () => {
-          if (res.statusCode >= 200 && res.statusCode < 300) {
-            resolve({ success: true, status: res.statusCode });
-          } else {
-            resolve({ success: false, status: res.statusCode, error: body || `HTTP ${res.statusCode}` });
-          }
-        });
-      });
-      req.on('error', (e) => resolve({ success: false, error: e.message }));
-      req.write(dataStr);
-      req.end();
-    } catch (err) {
-      resolve({ success: false, error: err.message });
-    }
-  });
-});
-
-ipcMain.handle('spotify-fetch-track', async (_e, rawUrl) => {
-  if (!rawUrl || typeof rawUrl !== 'string') {
-    return { success: false, error: 'الرابط غير صالح' };
-  }
-  let cleanUrl = rawUrl.trim();
-  const match = cleanUrl.match(/track[/:]([a-zA-Z0-9]+)/);
-  if (match && match[1]) {
-    cleanUrl = `https://open.spotify.com/track/${match[1]}`;
-  } else if (!cleanUrl.startsWith('https://')) {
-    return { success: false, error: 'يُرجى إدخال رابط Spotify صحيح (مثال: https://open.spotify.com/track/...)' };
-  }
-
-  return new Promise((resolve) => {
-    try {
-      const oembedUrl = `https://open.spotify.com/oembed?url=${encodeURIComponent(cleanUrl)}`;
-      const req = https.get(oembedUrl, {
-        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Naml-RPC/3.0' },
-        timeout: 8000
-      }, (res) => {
-        let body = '';
-        res.on('data', chunk => body += chunk);
-        res.on('end', () => {
-          if (res.statusCode >= 200 && res.statusCode < 300) {
-            try {
-              const data = JSON.parse(body);
-              let title = data.title || '';
-              let artist = '';
-              if (title.includes(' - ')) {
-                const parts = title.split(' - ');
-                title = parts[0].trim();
-                artist = parts.slice(1).join(' - ').trim();
-              } else if (title.includes(' by ')) {
-                const parts = title.split(' by ');
-                title = parts[0].trim();
-                artist = parts[1].trim();
-              }
-              resolve({
-                success: true,
-                title: data.title,
-                cleanTitle: title,
-                artist: artist,
-                artworkUrl: data.thumbnail_url || '',
-                trackUrl: cleanUrl
-              });
-            } catch (pErr) {
-              resolve({ success: false, error: 'تعذر قراءة بيانات الأغنية' });
-            }
-          } else {
-            resolve({ success: false, error: `رمز الخطأ من سبوتيفاي: ${res.statusCode}` });
-          }
-        });
-      });
-      req.on('error', (e) => resolve({ success: false, error: e.message }));
-      req.on('timeout', () => { req.destroy(); resolve({ success: false, error: 'انتهت مهلة الاتصال بسبوتيفاي' }); });
-    } catch (err) {
-      resolve({ success: false, error: err.message });
-    }
-  });
-});
-
-ipcMain.handle('spotify-fetch-lyrics', async (_e, { query, trackName, artistName }) => {
-  const searchTerm = (query || `${trackName || ''} ${artistName || ''}`).trim();
-  if (!searchTerm) {
-    return { success: false, error: 'اسم الأغنية مفقود' };
-  }
-
-  const searchLrclib = (q) => {
-    return new Promise((resolve) => {
-      try {
-        const url = `https://lrclib.net/api/search?q=${encodeURIComponent(q)}`;
-        const req = https.get(url, {
-          headers: { 'User-Agent': 'Naml-RPC/3.0 (https://github.com/sloom555555/naml-rpc)' },
-          timeout: 7000
-        }, (res) => {
-          let body = '';
-          res.on('data', chunk => body += chunk);
-          res.on('end', () => {
-            if (res.statusCode === 200) {
-              try {
-                const list = JSON.parse(body);
-                if (Array.isArray(list) && list.length > 0) {
-                  const synced = list.find(item => item.syncedLyrics && item.syncedLyrics.length > 20);
-                  const chosen = synced || list[0];
-                  resolve({
-                    success: true,
-                    syncedLyrics: chosen.syncedLyrics || null,
-                    plainLyrics: chosen.plainLyrics || null,
-                    trackName: chosen.trackName || trackName,
-                    artistName: chosen.artistName || artistName,
-                    duration: chosen.duration || 0
-                  });
-                  return;
-                }
-              } catch (e) {}
-            }
-            resolve({ success: false });
-          });
-        });
-        req.on('error', () => resolve({ success: false }));
-        req.on('timeout', () => { req.destroy(); resolve({ success: false }); });
-      } catch (e) {
-        resolve({ success: false });
-      }
-    });
-  };
-
-  const getExactLrclib = (track, artist) => {
-    return new Promise((resolve) => {
-      try {
-        const url = `https://lrclib.net/api/get?track_name=${encodeURIComponent(track)}&artist_name=${encodeURIComponent(artist || '')}`;
-        const req = https.get(url, {
-          headers: { 'User-Agent': 'Naml-RPC/3.0 (https://github.com/sloom555555/naml-rpc)' },
-          timeout: 7000
-        }, (res) => {
-          let body = '';
-          res.on('data', chunk => body += chunk);
-          res.on('end', () => {
-            if (res.statusCode === 200) {
-              try {
-                const item = JSON.parse(body);
-                if (item && (item.syncedLyrics || item.plainLyrics)) {
-                  resolve({
-                    success: true,
-                    syncedLyrics: item.syncedLyrics || null,
-                    plainLyrics: item.plainLyrics || null,
-                    trackName: item.trackName || track,
-                    artistName: item.artistName || artist,
-                    duration: item.duration || 0
-                  });
-                  return;
-                }
-              } catch (e) {}
-            }
-            resolve({ success: false });
-          });
-        });
-        req.on('error', () => resolve({ success: false }));
-        req.on('timeout', () => { req.destroy(); resolve({ success: false }); });
-      } catch (e) {
-        resolve({ success: false });
-      }
-    });
-  };
-
-  if (trackName && artistName) {
-    const exactRes = await getExactLrclib(trackName, artistName);
-    if (exactRes && exactRes.success && (exactRes.syncedLyrics || exactRes.plainLyrics)) {
-      return exactRes;
-    }
-  }
-
-  const searchRes = await searchLrclib(searchTerm);
-  if (searchRes && searchRes.success && (searchRes.syncedLyrics || searchRes.plainLyrics)) {
-    return searchRes;
-  }
-
-  const stripped = searchTerm.replace(/\(.*?\)|\[.*?\]|-.*$/g, '').trim();
-  if (stripped && stripped !== searchTerm) {
-    const strippedRes = await searchLrclib(stripped);
-    if (strippedRes && strippedRes.success) return strippedRes;
-  }
-
-  return { success: false, error: 'لم يتم العثور على كلمات مسجلة لهذه الأغنية في قاعدة البيانات' };
 });
 
 ipcMain.handle('import-backup', async () => {
@@ -1476,7 +1072,7 @@ function updateTrayMenu() {
   const rpcOn = activeRpcClient !== null;
 
   const menu = Menu.buildFromTemplate([
-    { label: `نامل (v3.0.0) — ${rpcOn ? '🟢 الـ RPC نشط' : '⚪ غير نشط'}`, enabled: false },
+    { label: `نامل (v2.0.0) — ${rpcOn ? '🟢 الـ RPC نشط' : '⚪ غير نشط'}`, enabled: false },
     { label: `استهلاك الذاكرة: ~${ramMB} MB`, enabled: false },
     { type: 'separator' },
     { label: 'إظهار التطبيق', click: () => { mainWindow?.show(); mainWindow?.focus(); mainWindow?.webContents.send('app-shown'); updateTrayMenu(); } },
