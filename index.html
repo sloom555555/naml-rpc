@@ -216,149 +216,6 @@
   font-size: 12px;
   font-weight: 800;
 }
-/* ── Rotator 2.0 & Frame Enhancements ── */
-.metrics-options-box {
-  background: var(--surface3);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 10px 12px;
-  margin-top: 8px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.rotator-frame-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 8px 10px;
-  transition: all 0.2s ease;
-}
-.rotator-frame-item:hover {
-  border-color: var(--border2);
-  background: rgba(255,255,255,0.02);
-}
-.rotator-frame-thumb {
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  background: var(--surface3);
-  object-fit: cover;
-  flex-shrink: 0;
-  border: 1px solid var(--border);
-}
-.rotator-frame-info {
-  flex: 1;
-  min-width: 0;
-}
-.rotator-frame-title {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.rotator-frame-sub {
-  font-size: 11px;
-  color: var(--muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-top: 1px;
-}
-.rotator-frame-actions {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex-shrink: 0;
-}
-.icon-chips-wrap {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin-top: 6px;
-}
-.icon-chip {
-  padding: 3px 8px;
-  font-size: 11px;
-  font-weight: 600;
-  border-radius: 6px;
-  background: var(--surface3);
-  border: 1px solid var(--border);
-  color: var(--muted);
-  cursor: pointer;
-  transition: all 0.15s ease;
-  user-select: none;
-}
-.icon-chip:hover {
-  border-color: var(--accent);
-  color: var(--text);
-  background: rgba(99,102,241,0.15);
-}
-.mini-frame-preview {
-  background: #111214;
-  border: 1px solid #2b2d31;
-  border-radius: 8px;
-  padding: 10px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 10px;
-}
-.mfp-img-wrap {
-  position: relative;
-  width: 44px;
-  height: 44px;
-  flex-shrink: 0;
-}
-.mfp-large-img {
-  width: 44px;
-  height: 44px;
-  border-radius: 8px;
-  object-fit: cover;
-  background: #2b2d31;
-}
-.mfp-small-img {
-  position: absolute;
-  bottom: -4px;
-  right: -4px;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  border: 2px solid #111214;
-  background: #2b2d31;
-  object-fit: cover;
-}
-.mfp-texts {
-  flex: 1;
-  min-width: 0;
-}
-.mfp-title {
-  font-size: 12px;
-  font-weight: 700;
-  color: #fff;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.mfp-details {
-  font-size: 11px;
-  color: #b5bac1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.mfp-state {
-  font-size: 11px;
-  color: #949ba4;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
 </style>
 </head>
 <body>
@@ -616,57 +473,30 @@
             <div class="toggle-hint" data-i18n="metrics_toggle_hint">إظهار نسبة استهلاك المعالج (CPU) والرام (RAM) حياً في حالة ديسكورد</div>
           </div>
           <label class="switch">
-            <input type="checkbox" id="enableSystemMetrics" onchange="toggleMetricsUI(); debouncedPreview(); debouncedAutoSave(true)"/>
+            <input type="checkbox" id="enableSystemMetrics" onchange="debouncedPreview()"/>
             <span class="slider"></span>
           </label>
-        </div>
-
-        <!-- Hardware Monitor Options -->
-        <div class="metrics-options-box" id="metrics-options-box" style="display:none;">
-          <div class="row2">
-            <div class="field">
-              <label>صيغة عرض الرام والمعالج</label>
-              <select id="metricsFormat" onchange="debouncedPreview(); debouncedAutoSave(true)" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:12px;padding:6px 10px;width:100%;outline:none">
-                <option value="full" selected>كامل (جيجابايت + نسبة %)</option>
-                <option value="percent">نسب مئوية فقط (RAM 50% | CPU 15%)</option>
-                <option value="compact">مختصر رموز (⚡ RAM | 💻 CPU)</option>
-                <option value="ram_only">الرام فقط (RAM Only)</option>
-                <option value="cpu_only">المعالج فقط (CPU Only)</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>مكان ظهور المراقبة</label>
-              <select id="metricsPlacement" onchange="debouncedPreview(); debouncedAutoSave(true)" style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:12px;padding:6px 10px;width:100%;outline:none">
-                <option value="state" selected>في خانة الحالة (State)</option>
-                <option value="details">في خانة التفاصيل (Details)</option>
-                <option value="large_text">في تلميح الصورة الكبيرة</option>
-                <option value="small_text">في تلميح الصورة الصغيرة</option>
-              </select>
-            </div>
-          </div>
         </div>
 
         <div id="rotator-settings-area" style="display:none;margin-top:12px">
           <div class="row2">
             <div class="field">
               <label data-i18n="rotator_interval_label">سرعة التنقل بين الفريمات</label>
-              <select id="rotationInterval" onchange="debouncedAutoSave(true)" style="background:var(--surface3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:13px;padding:8px 11px;width:100%;outline:none">
-                <option value="3">⚡ 3 ثواني (سريع جداً)</option>
-                <option value="5" selected>⏱ 5 ثواني (مثالي وموصى به)</option>
-                <option value="10">🕒 10 ثواني (مستقر)</option>
-                <option value="15">🧘 15 ثانية (هادئ وخفيف)</option>
+              <select id="rotationInterval" style="background:var(--surface3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:13px;padding:8px 11px;width:100%;outline:none">
+                <option value="3"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> 3 ثواني (سريع جداً)</option>
+                <option value="5" selected><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg> 5 ثواني (مثالي)</option>
+                <option value="10"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M3 11l2-2m-2 6l2 2m16-2l-2-2m2-4l-2 2M12 2v2m0 16v2M5.4 5.4l1.4 1.4M18.6 18.6l-1.4-1.4m0-11.8l1.4-1.4M6.8 18.6l-1.4-1.4"></path></svg> 10 ثواني (مستقر)</option>
+                <option value="15"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M5 22h14"></path><path d="M5 2h14"></path><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"></path><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"></path></svg> 15 ثانية (هادئ)</option>
               </select>
             </div>
             <div class="field">
               <label data-i18n="rotator_preset_label">سيناريو متحرك جاهز</label>
               <select id="rotatorPresetSelect" onchange="applyRotatorScenario(this.value)" style="background:var(--surface3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-family:inherit;font-size:13px;padding:8px 11px;width:100%;outline:none">
-                <option value="">-- اختر سيناريو متحرك جاهز --</option>
-                <option value="gamer">🎮 ألعاب وبطولات (GTA V, FiveM, Valorant)</option>
-                <option value="streamer">🔴 بث حي (Twitch, YouTube, Kick Live)</option>
-                <option value="developer">💻 برمجة وتطوير (VS Code Studio & GitHub)</option>
-                <option value="music">🎧 سبوتيفاي وأجواء هادئة (Spotify & Lofi)</option>
-                <option value="designer">🎨 تصميم ومونتاج (Photoshop, Blender 3D)</option>
-                <option value="coffee">☕ استراحة وتركيز (Coffee Break & AFK)</option>
+                <option value="">-- اختر سيناريو متحرك --</option>
+                <option value="streamer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><rect x="2" y="6" width="20" height="12" rx="2"></rect><line x1="6" y1="12" x2="10" y2="12"></line><line x1="8" y1="10" x2="8" y2="14"></line><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg> Streamer & Gamer Mode</option>
+                <option value="developer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg> Developer Suite & Code</option>
+                <option value="music"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M3 18v-6a9 9 0 0 1 18 0v6"></path><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path></svg> Chill Music Playlist</option>
+                <option value="cyberpunk"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> Cyberpunk Anime Vibe</option>
               </select>
             </div>
           </div>
@@ -1321,88 +1151,34 @@
 
 <!-- Add/Edit Frame Modal -->
 <div class="modal-overlay" id="modal-frame" style="display:none">
-  <div class="modal" style="max-width:540px;width:95%;">
-    <div class="modal-title" id="frame-modal-title">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg>
-      <span id="frame-modal-title-text">إضافة فريم متحرك</span>
-    </div>
+  <div class="modal">
+    <div class="modal-title" id="frame-modal-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg> إضافة فريم متحرك</div>
     <input type="hidden" id="frame-edit-index" value="-1"/>
-
-    <!-- Mini Live Frame Preview Inside Modal -->
-    <div class="mini-frame-preview" id="mini-frame-preview" style="margin-bottom:12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;display:flex;align-items:center;gap:10px;">
-      <div style="position:relative;width:42px;height:42px;flex-shrink:0;">
-        <img id="mini-prev-large" src="https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png" style="width:42px;height:42px;border-radius:8px;object-fit:cover;background:var(--surface3);display:block;border:1px solid var(--border);" alt=""/>
-        <img id="mini-prev-small" src="" style="position:absolute;bottom:-3px;right:-3px;width:18px;height:18px;border-radius:50%;border:2px solid var(--surface2);background:var(--surface1);object-fit:cover;display:none;" alt=""/>
-      </div>
-      <div style="flex:1;min-width:0;">
-        <div id="mini-prev-name" style="font-weight:700;font-size:12px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">اسم الفريم</div>
-        <div id="mini-prev-details" style="font-size:11px;color:var(--text-secondary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">التفاصيل...</div>
-        <div id="mini-prev-state" style="font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">الحالة...</div>
-      </div>
-      <div style="font-size:10px;font-weight:700;color:var(--accent2);background:rgba(99,102,241,0.12);padding:3px 8px;border-radius:10px;">معاينة الفريم</div>
-    </div>
-
     <div class="field">
       <label>عنوان/اسم الفريم</label>
-      <input type="text" id="frame-name-input" placeholder="مثال: فريم 1 - بث تويتش" maxlength="30" oninput="updateMiniFramePreview()"/>
+      <input type="text" id="frame-name-input" placeholder="مثال: فريم 1 - بث تويتش" maxlength="30"/>
     </div>
-
     <div class="row2">
       <div class="field">
         <label>التفاصيل (Details)</label>
-        <input type="text" id="frame-details-input" placeholder="ماذا تفعل..." maxlength="128" oninput="updateMiniFramePreview()"/>
+        <input type="text" id="frame-details-input" placeholder="ماذا تفعل..." maxlength="128"/>
       </div>
       <div class="field">
         <label>الحالة (State)</label>
-        <input type="text" id="frame-state-input" placeholder="حالة إضافية..." maxlength="128" oninput="updateMiniFramePreview()"/>
+        <input type="text" id="frame-state-input" placeholder="حالة إضافية..." maxlength="128"/>
       </div>
     </div>
-
-    <!-- Quick Icon Picker Chips -->
-    <div style="margin:4px 0 10px;">
-      <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:5px;">أيقونات سريعة جاهزة (اضغط لتعيينها للصورة الكبيرة):</label>
-      <div class="quick-icon-chips" style="display:flex;flex-wrap:wrap;gap:5px;">
-        <button type="button" class="icon-chip" onclick="selectQuickFrameIcon('https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png')">Discord</button>
-        <button type="button" class="icon-chip" onclick="selectQuickFrameIcon('https://cdn-icons-png.flaticon.com/512/5968/5968819.png')">Twitch</button>
-        <button type="button" class="icon-chip" onclick="selectQuickFrameIcon('https://cdn-icons-png.flaticon.com/512/1384/1384060.png')">YouTube</button>
-        <button type="button" class="icon-chip" onclick="selectQuickFrameIcon('https://cdn-icons-png.flaticon.com/512/174/174872.png')">Spotify</button>
-        <button type="button" class="icon-chip" onclick="selectQuickFrameIcon('https://cdn-icons-png.flaticon.com/512/906/906324.png')">VS Code</button>
-        <button type="button" class="icon-chip" onclick="selectQuickFrameIcon('https://cdn-icons-png.flaticon.com/512/686/686589.png')">Gaming 🎮</button>
-        <button type="button" class="icon-chip" onclick="selectQuickFrameIcon('https://cdn-icons-png.flaticon.com/512/785/785116.png')">Fire 🔥</button>
-        <button type="button" class="icon-chip" onclick="selectQuickFrameIcon('https://cdn-icons-png.flaticon.com/512/1828/1828884.png')">Star ⭐</button>
-      </div>
-    </div>
-
-    <!-- Images with Direct PC Upload -->
     <div class="row2">
-      <!-- Large Image -->
       <div class="field">
-        <label>الصورة الكبيرة (Key أو رابط أو رفع صورة)</label>
-        <div style="display:flex;gap:6px;align-items:center;">
-          <img id="frame-large-thumb" src="" style="width:34px;height:34px;border-radius:6px;object-fit:cover;background:var(--surface3);display:none;border:1px solid var(--border);" alt=""/>
-          <input type="text" id="frame-large-img-input" placeholder="رابط أو مفتاح..." oninput="updateFrameThumb('large'); updateMiniFramePreview()" style="flex:1;"/>
-          <button type="button" class="btn-upload" onclick="triggerFrameUpload('large')" title="رفع صورة من جهازك">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          </button>
-          <input type="file" id="frame-file-large" accept="image/*" style="display:none" onchange="handleFrameFileSelect(event, 'large')"/>
-        </div>
+        <label>الصورة الكبيرة (Key/URL)</label>
+        <input type="text" id="frame-large-img-input" placeholder="twitch / vscode..."/>
       </div>
-
-      <!-- Small Image -->
       <div class="field">
-        <label>الصورة الصغيرة (Key أو رابط أو رفع صورة)</label>
-        <div style="display:flex;gap:6px;align-items:center;">
-          <img id="frame-small-thumb" src="" style="width:34px;height:34px;border-radius:6px;object-fit:cover;background:var(--surface3);display:none;border:1px solid var(--border);" alt=""/>
-          <input type="text" id="frame-small-img-input" placeholder="رابط أو مفتاح..." oninput="updateFrameThumb('small'); updateMiniFramePreview()" style="flex:1;"/>
-          <button type="button" class="btn-upload" onclick="triggerFrameUpload('small')" title="رفع صورة من جهازك">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          </button>
-          <input type="file" id="frame-file-small" accept="image/*" style="display:none" onchange="handleFrameFileSelect(event, 'small')"/>
-        </div>
+        <label>الصورة الصغيرة (Key/URL)</label>
+        <input type="text" id="frame-small-img-input" placeholder="live / verified..."/>
       </div>
     </div>
-
-    <div class="modal-actions" style="margin-top:14px">
+    <div class="modal-actions" style="margin-top:12px">
       <button class="btn-accent" onclick="saveFrameFromModal()">حفظ الفريم</button>
       <button class="btn-ghost" onclick="closeModal('modal-frame')">إلغاء</button>
     </div>

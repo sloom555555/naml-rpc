@@ -70,18 +70,6 @@ window.addEventListener('DOMContentLoaded', async () => {
   }
   handleRefreshDiscordUser(true);
 
-  if (window.rpc?.onAppHidden) {
-    window.rpc.onAppHidden(() => {
-      console.log('App entered tray background mode');
-    });
-  }
-  if (window.rpc?.onAppShown) {
-    window.rpc.onAppShown(() => {
-      console.log('App restored from tray');
-      handleQuickDiscordCheck();
-    });
-  }
-
   // Char counters
   ['details','state'].forEach(id => {
     const el = document.getElementById(id);
@@ -131,12 +119,6 @@ function switchTab(name) {
 // ══════════════════════════════════════════
 let rotatorFramesList = [];
 
-function toggleMetricsUI() {
-  const enabled = document.getElementById('enableSystemMetrics')?.checked;
-  const box = document.getElementById('metrics-options-box');
-  if (box) box.style.display = enabled ? 'flex' : 'none';
-}
-
 function collectConfig() {
   return {
     clientId:             v('clientId') || '1533169274401849414',
@@ -166,8 +148,6 @@ function collectConfig() {
 
     rotationEnabled:      document.getElementById('rotationEnabled')?.checked || false,
     enableSystemMetrics:  document.getElementById('enableSystemMetrics')?.checked || false,
-    metricsFormat:        document.getElementById('metricsFormat')?.value || 'full',
-    metricsPlacement:     document.getElementById('metricsPlacement')?.value || 'state',
     rotationInterval:     parseInt(document.getElementById('rotationInterval')?.value) || 5,
     rotationFrames:       rotatorFramesList
   };
@@ -190,19 +170,12 @@ function applyConfigToForm(cfg) {
   if (document.getElementById('enableSystemMetrics')) {
     document.getElementById('enableSystemMetrics').checked = !!cfg.enableSystemMetrics;
   }
-  if (document.getElementById('metricsFormat') && cfg.metricsFormat) {
-    document.getElementById('metricsFormat').value = cfg.metricsFormat;
-  }
-  if (document.getElementById('metricsPlacement') && cfg.metricsPlacement) {
-    document.getElementById('metricsPlacement').value = cfg.metricsPlacement;
-  }
   if (document.getElementById('rotationInterval') && cfg.rotationInterval) {
     document.getElementById('rotationInterval').value = cfg.rotationInterval;
   }
 
   rotatorFramesList = Array.isArray(cfg.rotationFrames) ? cfg.rotationFrames : [];
   toggleRotatorUI();
-  toggleMetricsUI();
   renderRotatorFrames();
 
   updateThumb('large', cfg.largeImageKey);
@@ -1003,29 +976,10 @@ function updatePreview() {
     smallEl.src = cfg.smallImageKey; smallEl.classList.add('show');
   } else { smallEl.classList.remove('show'); }
 
-  let detailsText = cfg.details || '';
-  let stateText   = cfg.state || '';
-
-  if (cfg.enableSystemMetrics) {
-    const fmt = cfg.metricsFormat || 'full';
-    let sampleMetrics = '⚡ RAM 4.2GB (26%) | 💻 CPU 12%';
-    if (fmt === 'percent') sampleMetrics = 'RAM 26% | CPU 12%';
-    else if (fmt === 'compact') sampleMetrics = '⚡ RAM | 💻 CPU';
-    else if (fmt === 'ram_only') sampleMetrics = 'RAM 4.2GB (26%)';
-    else if (fmt === 'cpu_only') sampleMetrics = 'CPU 12%';
-
-    const placement = cfg.metricsPlacement || 'state';
-    if (placement === 'state') {
-      stateText = stateText ? `${stateText} | ${sampleMetrics}` : sampleMetrics;
-    } else if (placement === 'details') {
-      detailsText = detailsText ? `${detailsText} | ${sampleMetrics}` : sampleMetrics;
-    }
-  }
-
-  if (detailsText) { details.textContent = detailsText; details.style.display = ''; }
+  if (cfg.details) { details.textContent = cfg.details; details.style.display = ''; }
   else { details.style.display = 'none'; }
 
-  if (stateText) { state.textContent = stateText; state.style.display = ''; }
+  if (cfg.state) { state.textContent = cfg.state; state.style.display = ''; }
   else { state.style.display = 'none'; }
 
   if (cfg.startTimestamp) { timeEl.textContent = '00:00 مضت'; timeEl.style.display = ''; }
@@ -1496,182 +1450,45 @@ function renderRotatorFrames() {
   if (!container) return;
   
   if (rotatorFramesList.length === 0) {
-    container.innerHTML = `<div style="font-size:11px;color:var(--muted);text-align:center;padding:12px;background:var(--surface3);border-radius:6px">لا توجد فريمات متحركة بعد. اضغط «إضافة فريم جديد» أو اختر سيناريو جاهز.</div>`;
+    container.innerHTML = `<div style="font-size:11px;color:var(--muted);text-align:center;padding:10px;background:var(--surface3);border-radius:6px">لا توجد فريمات متحركة بعد. اضغط «إضافة فريم جديد» أو اختر سيناريو جاهز.</div>`;
     return;
   }
 
-  container.innerHTML = rotatorFramesList.map((f, i) => {
-    let thumbSrc = f.largeImageKey || '';
-    const hasThumb = thumbSrc.startsWith('http') || thumbSrc.startsWith('data:image');
-    return `
+  container.innerHTML = rotatorFramesList.map((f, i) => `
     <div class="rotator-frame-item">
-      ${hasThumb 
-        ? `<img class="rotator-frame-thumb" src="${esc(thumbSrc)}" alt=""/>` 
-        : `<div class="rotator-frame-thumb" style="display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--accent2);">${i + 1}</div>`}
       <div class="rotator-frame-info">
-        <div class="rotator-frame-title">${esc(f.name || `فريم ${i + 1}`)}</div>
+        <div class="rotator-frame-title">فريم ${i + 1}: ${esc(f.name || f.details || 'فريم بدون عنوان')}</div>
         <div class="rotator-frame-sub">${esc(f.details || '—')} | ${esc(f.state || '—')}</div>
       </div>
       <div class="rotator-frame-actions">
-        <button class="btn-sm" onclick="moveFrame(${i}, -1)" ${i === 0 ? 'disabled style="opacity:0.35"' : ''} title="تحريك لأعلى">▲</button>
-        <button class="btn-sm" onclick="moveFrame(${i}, 1)" ${i === rotatorFramesList.length - 1 ? 'disabled style="opacity:0.35"' : ''} title="تحريك لأسفل">▼</button>
-        <button class="btn-sm" onclick="duplicateFrame(${i})" title="تكرار / نسخ">⎘</button>
-        <button class="btn-sm" onclick="editFrame(${i})" title="تعديل">✎</button>
-        <button class="btn-sm btn-3d-red" onclick="deleteFrame(${i})" title="حذف">✕</button>
+        <button class="btn-sm" onclick="editFrame(${i})" title="تعديل"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg></button>
+        <button class="btn-sm btn-3d-red" onclick="deleteFrame(${i})" title="حذف"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
       </div>
     </div>
-  `}).join('');
-}
-
-function moveFrame(index, dir) {
-  const targetIndex = index + dir;
-  if (targetIndex < 0 || targetIndex >= rotatorFramesList.length) return;
-  const item = rotatorFramesList.splice(index, 1)[0];
-  rotatorFramesList.splice(targetIndex, 0, item);
-  renderRotatorFrames();
-  debouncedAutoSave(true);
-}
-
-function duplicateFrame(index) {
-  const item = rotatorFramesList[index];
-  if (!item) return;
-  const copy = JSON.parse(JSON.stringify(item));
-  copy.name = (copy.name || `فريم ${index + 1}`) + ' (نسخة)';
-  rotatorFramesList.splice(index + 1, 0, copy);
-  renderRotatorFrames();
-  debouncedAutoSave(true);
-  toast('📋 تم تكرار الفريم بنجاح', 'success');
-}
-
-function triggerFrameUpload(target) {
-  const fileInput = document.getElementById(`frame-file-${target}`);
-  if (fileInput) fileInput.click();
-}
-
-async function handleFrameFileSelect(e, target) {
-  const file = e.target.files[0];
-  if (!file) return;
-  
-  toast('⏳ جاري تجهيز ورفع صورة الفريم...', 'info');
-  const reader = new FileReader();
-  reader.onloadend = async () => {
-    const base64Data = reader.result;
-    const thumb = document.getElementById(`frame-${target}-thumb`);
-    if (thumb) {
-      thumb.src = base64Data;
-      thumb.style.display = 'block';
-    }
-
-    if (window.rpc?.uploadImage) {
-      try {
-        const res = await window.rpc.uploadImage(base64Data);
-        if (res?.success && res.url) {
-          const input = document.getElementById(`frame-${target}-img-input`);
-          if (input) input.value = res.url;
-          if (thumb) thumb.src = res.url;
-          updateMiniFramePreview();
-          toast('✅ تم رفع صورة الفريم بنجاح', 'success');
-          return;
-        }
-      } catch (err) {}
-    }
-    const input = document.getElementById(`frame-${target}-img-input`);
-    if (input) input.value = base64Data;
-    updateMiniFramePreview();
-    toast('✅ تم تعيين الصورة محلياً للفريم', 'info');
-  };
-  reader.readAsDataURL(file);
-  e.target.value = '';
-}
-
-function updateFrameThumb(target) {
-  const input = document.getElementById(`frame-${target}-img-input`);
-  const thumb = document.getElementById(`frame-${target}-thumb`);
-  if (!input || !thumb) return;
-  const val = input.value.trim();
-  if (val && (val.startsWith('http://') || val.startsWith('https://') || val.startsWith('data:image'))) {
-    thumb.src = val;
-    thumb.style.display = 'block';
-  } else {
-    thumb.style.display = 'none';
-    thumb.src = '';
-  }
-}
-
-function selectQuickFrameIcon(url) {
-  const largeInput = document.getElementById('frame-large-img-input');
-  if (largeInput) {
-    largeInput.value = url;
-    updateFrameThumb('large');
-    updateMiniFramePreview();
-  }
-}
-
-function updateMiniFramePreview() {
-  const name = document.getElementById('frame-name-input')?.value || 'اسم الفريم';
-  const details = document.getElementById('frame-details-input')?.value || 'التفاصيل...';
-  const state = document.getElementById('frame-state-input')?.value || 'الحالة...';
-  const largeKey = document.getElementById('frame-large-img-input')?.value || '';
-  const smallKey = document.getElementById('frame-small-img-input')?.value || '';
-
-  const prevName = document.getElementById('mini-prev-name');
-  const prevDetails = document.getElementById('mini-prev-details');
-  const prevState = document.getElementById('mini-prev-state');
-  const prevLarge = document.getElementById('mini-prev-large');
-  const prevSmall = document.getElementById('mini-prev-small');
-
-  if (prevName) prevName.textContent = name;
-  if (prevDetails) prevDetails.textContent = details;
-  if (prevState) prevState.textContent = state;
-
-  if (prevLarge) {
-    if (largeKey.startsWith('http://') || largeKey.startsWith('https://') || largeKey.startsWith('data:image')) {
-      prevLarge.src = largeKey;
-    } else {
-      prevLarge.src = 'https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png';
-    }
-  }
-
-  if (prevSmall) {
-    if (smallKey.startsWith('http://') || smallKey.startsWith('https://') || smallKey.startsWith('data:image')) {
-      prevSmall.src = smallKey;
-      prevSmall.style.display = 'block';
-    } else {
-      prevSmall.style.display = 'none';
-      prevSmall.src = '';
-    }
-  }
+  `).join('');
 }
 
 function openAddFrameModal() {
-  const titleEl = document.getElementById('frame-modal-title-text');
-  if (titleEl) titleEl.textContent = 'إضافة فريم متحرك جديد';
+  document.getElementById('frame-modal-title').innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg> إضافة فريم متحرك جديد';
   document.getElementById('frame-edit-index').value = '-1';
   document.getElementById('frame-name-input').value = '';
   document.getElementById('frame-details-input').value = '';
   document.getElementById('frame-state-input').value = '';
   document.getElementById('frame-large-img-input').value = '';
   document.getElementById('frame-small-img-input').value = '';
-  updateFrameThumb('large');
-  updateFrameThumb('small');
-  updateMiniFramePreview();
   showModal('modal-frame');
 }
 
 function editFrame(index) {
   const f = rotatorFramesList[index];
   if (!f) return;
-  const titleEl = document.getElementById('frame-modal-title-text');
-  if (titleEl) titleEl.textContent = `تعديل الفريم ${index + 1}`;
+  document.getElementById('frame-modal-title').textContent = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg> تعديل الفريم ${index + 1}`;
   document.getElementById('frame-edit-index').value = index;
   document.getElementById('frame-name-input').value = f.name || '';
   document.getElementById('frame-details-input').value = f.details || '';
   document.getElementById('frame-state-input').value = f.state || '';
   document.getElementById('frame-large-img-input').value = f.largeImageKey || '';
   document.getElementById('frame-small-img-input').value = f.smallImageKey || '';
-  updateFrameThumb('large');
-  updateFrameThumb('small');
-  updateMiniFramePreview();
   showModal('modal-frame');
 }
 
@@ -1679,7 +1496,7 @@ function deleteFrame(index) {
   rotatorFramesList.splice(index, 1);
   renderRotatorFrames();
   debouncedAutoSave(true);
-  toast('🗑️ تم حذف الفريم', 'info');
+  toast('<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg> تم حذف الفريم', 'info');
 }
 
 function saveFrameFromModal() {
@@ -1710,34 +1527,28 @@ function applyRotatorScenario(key) {
   document.getElementById('rotationEnabled').checked = true;
   toggleRotatorUI();
 
-  if (key === 'gamer') {
+  if (key === 'streamer') {
     rotatorFramesList = [
-      { name: '🎮 Grand Theft Auto V', details: 'Playing GTA V - FiveM RP', state: 'Server: Sentry City | Online: 128', largeImageKey: 'https://cdn-icons-png.flaticon.com/512/686/686589.png', smallImageKey: 'https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png' },
-      { name: '🔫 Valorant Ranked', details: 'Competitive Match - Ascendant', state: 'Score: 11 - 9 (Match Point)', largeImageKey: 'https://cdn-icons-png.flaticon.com/512/785/785116.png', smallImageKey: 'https://cdn-icons-png.flaticon.com/512/1828/1828884.png' }
-    ];
-  } else if (key === 'streamer') {
-    rotatorFramesList = [
-      { name: '🔴 بث حي تويتش', details: 'Live Streaming Twitch', state: 'Playing GTA V RP & Chilling', largeImageKey: 'https://cdn-icons-png.flaticon.com/512/5968/5968819.png', smallImageKey: 'https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png' },
-      { name: '🎥 بث حي يوتيوب', details: 'Live on YouTube Gaming', state: 'Chatting with Subscribers', largeImageKey: 'https://cdn-icons-png.flaticon.com/512/1384/1384060.png', smallImageKey: 'https://cdn-icons-png.flaticon.com/512/785/785116.png' }
+      { name: '<span class="status-dot" style="background:var(--color-error, #ef4444); display:inline-block; margin-left:4px;"></span> بث حي تويتش', details: '<span class="status-dot" style="background:var(--color-error, #ef4444); display:inline-block; margin-left:4px;"></span> Live Streaming Twitch', state: 'Playing GTA V RP', largeImageKey: 'twitch', smallImageKey: 'live' },
+      { name: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><rect x="2" y="6" width="20" height="12" rx="2"></rect><line x1="6" y1="12" x2="10" y2="12"></line><line x1="8" y1="10" x2="8" y2="14"></line><line x1="15" y1="13" x2="15.01" y2="13"></line><line x1="18" y1="11" x2="18.01" y2="11"></line></svg> سيرفر FiveM', details: 'City RP - Server #1', state: 'Online: 120/128', largeImageKey: 'gtav', smallImageKey: 'discord' },
+      { name: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg> الروم الصوتي', details: 'Sentry KSA Voice Chat', state: 'Chilling with Squad', largeImageKey: 'discord', smallImageKey: 'mic' }
     ];
   } else if (key === 'developer') {
     rotatorFramesList = [
-      { name: '💻 VS Code Studio', details: 'Developing Naml RPC 2.0', state: 'Workspace: Clean Source v2.0.0', largeImageKey: 'https://cdn-icons-png.flaticon.com/512/906/906324.png', smallImageKey: 'https://cdn-icons-png.flaticon.com/512/1828/1828884.png' },
-      { name: '⚡ GitHub Push', details: 'Open Source Repository', state: 'Branch: main (Clean Build)', largeImageKey: 'https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png', smallImageKey: 'https://cdn-icons-png.flaticon.com/512/785/785116.png' }
+      { name: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg> VS Code Studio', details: 'Developing نامل', state: 'Workspace: Main Project', largeImageKey: 'vscode', smallImageKey: 'git' },
+      { name: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path></svg> Photoshop Design', details: 'Creating 3D Anime UI', state: 'Editing Logo.psd', largeImageKey: 'photoshop', smallImageKey: 'paint' },
+      { name: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> GitHub Push', details: 'Open Source Repository', state: 'Branch: main (Clean Build)', largeImageKey: 'github', smallImageKey: 'check' }
     ];
   } else if (key === 'music') {
     rotatorFramesList = [
-      { name: '🎧 Spotify Playlist', details: 'Listening to Lofi Beats', state: 'ChilledCow - Lofi Girl', largeImageKey: 'https://cdn-icons-png.flaticon.com/512/174/174872.png', smallImageKey: 'https://cdn-icons-png.flaticon.com/512/1828/1828884.png' },
-      { name: '🌙 Night Synthwave', details: 'Synthwave & Chill Melodies', state: '03:12 / 04:45', largeImageKey: 'https://cdn-icons-png.flaticon.com/512/174/174872.png', smallImageKey: 'https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png' }
+      { name: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg> Spotify Track #1', details: 'Listening to Lofi Anime Beats', state: 'Artist: ChilledCow', largeImageKey: 'spotify', smallImageKey: 'music' },
+      { name: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M3 18v-6a9 9 0 0 1 18 0v6"></path><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"></path></svg> Playlist Vibe', details: 'Night Drive Synthwave', state: '02:45 / 04:12', largeImageKey: 'spotify', smallImageKey: 'play' },
+      { name: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="12" x2="6" y2="4"></line><line x1="10" y1="12" x2="10" y2="4"></line><line x1="14" y1="12" x2="14" y2="4"></line></svg> Rest Time', details: 'Taking a Coffee Break <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="12" x2="6" y2="4"></line><line x1="10" y1="12" x2="10" y2="4"></line><line x1="14" y1="12" x2="14" y2="4"></line></svg>', state: 'AFK for 10 mins', largeImageKey: 'coffee', smallImageKey: 'smile' }
     ];
-  } else if (key === 'designer') {
+  } else if (key === 'cyberpunk') {
     rotatorFramesList = [
-      { name: '🎨 Adobe Photoshop', details: 'Designing 3D UI & Assets', state: 'Editing Poster.psd (4K)', largeImageKey: 'https://cdn-icons-png.flaticon.com/512/686/686589.png', smallImageKey: 'https://cdn-icons-png.flaticon.com/512/1828/1828884.png' },
-      { name: '🖌️ Blender 3D Rendering', details: '3D Scene & Lighting', state: 'Frame 150/300 Rendering', largeImageKey: 'https://cdn-icons-png.flaticon.com/512/906/906324.png', smallImageKey: 'https://cdn-icons-png.flaticon.com/512/785/785116.png' }
-    ];
-  } else if (key === 'coffee') {
-    rotatorFramesList = [
-      { name: '☕ استراحة قهوة', details: 'Taking a Coffee Break', state: 'AFK for a few minutes', largeImageKey: 'https://cdn-icons-png.flaticon.com/512/1828/1828884.png', smallImageKey: 'https://assets-global.website-files.com/6257adef93867e50d84d30e2/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png' }
+      { name: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> Cyberpunk 2077', details: 'Exploring Night City', state: 'Level 50 - Street Kid', largeImageKey: 'cyberpunk', smallImageKey: 'star' },
+      { name: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-bottom: 2px;"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"></path><circle cx="12" cy="12" r="3"></circle></svg> Anime Vibe', details: 'SentryRPC Anime Edition', state: 'Status: Overpowered ✨', largeImageKey: 'anime', smallImageKey: 'sparkles' }
     ];
   }
 

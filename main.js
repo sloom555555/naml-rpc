@@ -291,55 +291,15 @@ const os = require('os');
 let rotationFrames = [];
 let currentFrameIndex = 0;
 
-let prevCpuTimes = null;
-let cachedCpuPercent = 0;
-
-function calculateCpuPercent() {
-  const cpus = os.cpus();
-  if (!cpus || cpus.length === 0) return 0;
-  let idle = 0;
-  let total = 0;
-  for (const cpu of cpus) {
-    for (const type in cpu.times) {
-      total += cpu.times[type];
-    }
-    idle += cpu.times.idle;
-  }
-
-  if (prevCpuTimes) {
-    const idleDiff = idle - prevCpuTimes.idle;
-    const totalDiff = total - prevCpuTimes.total;
-    if (totalDiff > 0) {
-      cachedCpuPercent = Math.max(0, Math.min(100, Math.round((1 - (idleDiff / totalDiff)) * 100)));
-    }
-  }
-
-  prevCpuTimes = { idle, total };
-  return cachedCpuPercent;
-}
-
-function getSystemMetricsText(format = 'full') {
-  const totalMem = os.totalmem();
-  const freeMem = os.freemem();
-  const usedMem = Math.max(0, totalMem - freeMem);
-  const ramPercent = Math.round((usedMem / totalMem) * 100);
-  const usedGB = (usedMem / (1024 * 1024 * 1024)).toFixed(1);
-  const totalGB = (totalMem / (1024 * 1024 * 1024)).toFixed(1);
-  const cpuLoad = calculateCpuPercent();
-
-  if (format === 'percent') {
-    return `الرام: ${ramPercent}% | المعالج: ${cpuLoad}%`;
-  }
-  if (format === 'compact') {
-    return `⚡ RAM: ${usedGB}GB (${ramPercent}%) | 💻 CPU: ${cpuLoad}%`;
-  }
-  if (format === 'ram_only') {
-    return `الرام: ${usedGB}GB (${ramPercent}%)`;
-  }
-  if (format === 'cpu_only') {
-    return `المعالج: ${cpuLoad}%`;
-  }
-  return `الرام: ${usedGB}GB / ${totalGB}GB (${ramPercent}%) | المعالج: ${cpuLoad}%`;
+function getSystemMetricsText() {
+  const freeMemGB = (os.freemem() / (1024 * 1024 * 1024)).toFixed(1);
+  const totalMemGB = (os.totalmem() / (1024 * 1024 * 1024)).toFixed(1);
+  const usedMemGB = (totalMemGB - freeMemGB).toFixed(1);
+  const cpuLoad = os.loadavg()[0]?.toFixed(1) || '0.0';
+  return {
+    mem: `RAM: ${usedMemGB}GB / ${totalMemGB}GB`,
+    cpu: `CPU: ${cpuLoad}%`
+  };
 }
 
 async function startRpc(config) {
@@ -454,30 +414,19 @@ function buildActivity(config) {
   const activity = {};
   let details = config.details || '';
   let state = config.state || '';
-  let largeImageText = config.largeImageText || '';
-  let smallImageText = config.smallImageText || '';
 
   if (config.enableSystemMetrics) {
-    const metricsStr = getSystemMetricsText(config.metricsFormat || 'full');
-    const placement = config.metricsPlacement || 'state';
-
-    if (placement === 'details') {
-      details = details ? `${details} | ${metricsStr}` : metricsStr;
-    } else if (placement === 'large_text') {
-      largeImageText = largeImageText ? `${largeImageText} | ${metricsStr}` : metricsStr;
-    } else if (placement === 'small_text') {
-      smallImageText = smallImageText ? `${smallImageText} | ${metricsStr}` : metricsStr;
-    } else {
-      state = state ? `${state} | ${metricsStr}` : metricsStr;
-    }
+    const metrics = getSystemMetricsText();
+    details = details ? `${details} | ${metrics.cpu}` : metrics.cpu;
+    state = state ? `${state} | ${metrics.mem}` : metrics.mem;
   }
 
-  if (details) activity.details = String(details).substring(0, 128);
-  if (state) activity.state = String(state).substring(0, 128);
+  if (details) activity.details = details;
+  if (state) activity.state = state;
   if (config.largeImageKey) activity.largeImageKey = config.largeImageKey;
-  if (largeImageText) activity.largeImageText = String(largeImageText).substring(0, 128);
+  if (config.largeImageText) activity.largeImageText = config.largeImageText;
   if (config.smallImageKey) activity.smallImageKey = config.smallImageKey;
-  if (smallImageText) activity.smallImageText = String(smallImageText).substring(0, 128);
+  if (config.smallImageText) activity.smallImageText = config.smallImageText;
 
   if (config.startTimestamp) activity.startTimestamp = config.startTimestampVal || Date.now();
   if (config.endTimestamp && config.endTimestamp > 0) {
@@ -946,36 +895,11 @@ ipcMain.handle('import-backup', async () => {
   }
 });
 
-app.commandLine.appendSwitch('js-flags', '--expose-gc --max-old-space-size=128');
-app.commandLine.appendSwitch('disable-site-isolation-trials');
-app.commandLine.appendSwitch('disable-features', 'CalculateNativeWinOcclusion,HardwareMediaKeyHandling');
-app.commandLine.appendSwitch('disable-background-timer-throttling');
-app.commandLine.appendSwitch('disable-breakpad');
-app.commandLine.appendSwitch('disable-component-update');
-app.commandLine.appendSwitch('disable-print-preview');
-
-function trimProcessMemory() {
-  try {
-    if (global.gc) global.gc();
-    if (mainWindow && mainWindow.webContents && mainWindow.webContents.session) {
-      mainWindow.webContents.session.clearCache().catch(() => {});
-    }
-    if (process.platform === 'win32') {
-      exec('powershell -NoProfile -Command "[System.Diagnostics.Process]::GetProcessesByName(\'naml\') | ForEach-Object { $_.MinWorkingSet = [System.IntPtr]::Zero }"', () => {});
-    }
-    if (mainWindow && mainWindow.webContents) {
-      mainWindow.webContents.send('app-hidden');
-    }
-  } catch (e) {}
-}
-
-ipcMain.handle('app-trim-memory', () => {
-  trimProcessMemory();
-  const mem = process.memoryUsage();
-  return { success: true, rssMB: Math.round(mem.rss / (1024 * 1024)) };
-});
-
-let hasShownTrayNotice = false;
+// app.commandLine.appendSwitch('disable-site-isolation-trials');
+// app.commandLine.appendSwitch('disable-features', 'HardwareMediaKeyHandling');
+// app.commandLine.appendSwitch('disable-background-timer-throttling');
+// app.commandLine.appendSwitch('disable-gpu');
+// app.commandLine.appendSwitch('disable-renderer-backgrounding');
 
 function createWindow() {
   const settings = loadSettings();
@@ -1023,38 +947,17 @@ function createWindow() {
     const s = loadSettings();
     if (s.startMinimized) {
       mainWindow.hide();
-      trimProcessMemory();
     } else {
       mainWindow.show();
       mainWindow.focus();
     }
-    updateTrayMenu();
-  });
-
-  mainWindow.on('show', () => {
-    if (mainWindow && mainWindow.webContents) {
-      mainWindow.webContents.send('app-shown');
-    }
-    updateTrayMenu();
   });
 
   mainWindow.on('close', (e) => {
     const currentSettings = loadSettings();
-    if (currentSettings.minimizeToTray !== false && !isQuitting && tray) {
+    if (currentSettings.minimizeToTray && !isQuitting && tray) {
       e.preventDefault();
       mainWindow.hide();
-      trimProcessMemory();
-      updateTrayMenu();
-      if (!hasShownTrayNotice) {
-        hasShownTrayNotice = true;
-        try {
-          tray.displayBalloon({
-            iconType: 'info',
-            title: 'نامل — في الخلفية',
-            content: 'يستمر نامل بالعمل في الخلفية بأقل استهلاك للرام. للإغلاق النهائي انقر باليمين على الأيقونة.'
-          });
-        } catch (err) {}
-      }
     }
   });
 
@@ -1065,49 +968,25 @@ function createWindow() {
   setupDiscordWatcher(mainWindow);
 }
 
-function updateTrayMenu() {
-  if (!tray) return;
-  const mem = process.memoryUsage();
-  const ramMB = Math.round(mem.rss / (1024 * 1024));
-  const rpcOn = activeRpcClient !== null;
-
-  const menu = Menu.buildFromTemplate([
-    { label: `نامل (v2.0.0) — ${rpcOn ? '🟢 الـ RPC نشط' : '⚪ غير نشط'}`, enabled: false },
-    { label: `استهلاك الذاكرة: ~${ramMB} MB`, enabled: false },
-    { type: 'separator' },
-    { label: 'إظهار التطبيق', click: () => { mainWindow?.show(); mainWindow?.focus(); mainWindow?.webContents.send('app-shown'); updateTrayMenu(); } },
-    { label: rpcOn ? 'إيقاف الـ RPC' : 'تشغيل الـ RPC', click: async () => {
-        if (rpcOn) {
-          await stopRpc();
-          mainWindow?.webContents.send('rpc-stopped');
-        } else {
-          const cfg = loadConfig();
-          await startRpc(cfg);
-          mainWindow?.webContents.send('rpc-started');
-        }
-        updateTrayMenu();
-      }
-    },
-    { label: 'تنظيف الذاكرة الآن ⚡', click: () => { trimProcessMemory(); updateTrayMenu(); } },
-    { type: 'separator' },
-    { label: 'إنهاء التطبيق نهائياً', click: () => { isQuitting = true; app.quit(); } }
-  ]);
-  tray.setContextMenu(menu);
-  tray.setToolTip(`نامل — ${rpcOn ? 'نشط' : 'غير نشط'} (~${ramMB}MB)`);
-}
-
 function createTray() {
   const iconPath = path.join(__dirname, 'assets', 'tray-new.png');
   const fallbackPath = path.join(__dirname, 'assets', 'naml-logo.png');
   const usePath = fs.existsSync(iconPath) ? iconPath : fallbackPath;
   const icon = nativeImage.createFromPath(usePath).resize({ width: 22, height: 22 });
   tray = new Tray(icon);
-  updateTrayMenu();
+  const menu = Menu.buildFromTemplate([
+    { label: 'نامل', enabled: false },
+    { type: 'separator' },
+    { label: 'إظهار التطبيق', click: () => { mainWindow?.show(); mainWindow?.focus(); } },
+    { label: 'إيقاف الـ RPC', click: async () => { await stopRpc(); mainWindow?.webContents.send('rpc-stopped'); } },
+    { type: 'separator' },
+    { label: 'إنهاء التطبيق', click: () => { isQuitting = true; app.quit(); } }
+  ]);
+  tray.setToolTip('نامل — Rich Presence & Bot Suite');
+  tray.setContextMenu(menu);
   tray.on('double-click', () => {
     mainWindow?.show();
     mainWindow?.focus();
-    mainWindow?.webContents.send('app-shown');
-    updateTrayMenu();
   });
 }
 
